@@ -1,0 +1,233 @@
+[33mcommit 6388e26dd8a42071f65f764a3ef3d9523dda3d6e[m[33m ([m[1;36mHEAD[m[33m)[m
+Merge: 714c9e2 e9a6dbd
+Author: David Snopek <dsnopek@gmail.com>
+Date:   Tue Mar 18 08:08:53 2025 -0500
+
+    Merge pull request #1745 from dsnopek/4.4-cherrypicks-1
+    
+    Cherry-picks for the godot-cpp 4.4 branch - 1st batch
+
+[33mcommit e9a6dbd6977d6893533f205b8522d04899b7b6fd[m
+Author: Samuel Nicholas <nicholas.samuel@gmail.com>
+Date:   Wed Feb 5 23:53:30 2025 +1030
+
+    CMake: public/private flags
+    
+    Made all warnings private.
+    Warning as error private
+    Consistency in  generator expressions
+    
+    (cherry picked from commit 5eb16d0c5bb8bcb89ec55090b489685f0b021bec)
+
+[33mcommit 6b0d2e502ce0274576f11b4d43ecb07313623de4[m
+Author: zhmt <zhmtzhmt@qq.com>
+Date:   Fri Feb 7 15:58:31 2025 +0800
+
+    binding_generator.py: Don't error if directory already exists
+    
+    It should be ok when folders exist. Exception shouldn't be thrown.
+    
+    Update binding_generator.py
+    
+    It should be ok when folds exist. It will fail to build without this patch,  in vs code on windows with compiler ( visual studio community 2022 amd 64) .
+    
+    Co-Authored-By: Chris Cranford <ccranfor@redhat.com>
+    (cherry picked from commit d79959c79e61af7a1c3d4e7824ebbc4301aab3bf)
+
+[33mcommit 21fba890d6e84d95cf4ab937a6ec30a29a7234e2[m
+Author: Samuel Nicholas <nicholas.samuel@gmail.com>
+Date:   Tue Mar 11 12:33:38 2025 +1030
+
+    CMake: XCode dependency chain fixes - remastered
+    
+    When attempting to generate XCode projects it would fail due to the target dependency chain not meeting expectations.
+    
+    This PR, adds the required dependency infomation so that the XCode generator works.
+    
+    (cherry picked from commit f83f364144ebf03e69ea154a91f30f72d1a1c84d)
+
+[33mcommit 2d45d08722b456e91b985ada5dc5d98f23261c03[m
+Author: David Snopek <dsnopek@gmail.com>
+Date:   Fri Feb 21 14:11:07 2025 -0600
+
+    Check that precision of `extension_api.json` matches build options
+    
+    (cherry picked from commit 0a73df5f531ca1b8409d5dd984f7b857b7ae56ac)
+
+[33mcommit 368ec63a2486876c610b28a29d95a4e03f511322[m
+Author: Samuel Nicholas <nicholas.samuel@gmail.com>
+Date:   Sun Mar 9 12:31:56 2025 +1030
+
+    CMake: Target as configuration option
+    
+    Add GODOTCPP_TARGET configuration option
+    Remove loop to generate the godot-cpp.<target> CMake Targets
+    
+    Rename test bindings target
+    Update documentation
+    
+    (cherry picked from commit 89abe1526878341625f24447c8b586a69d4616e9)
+
+[33mcommit 1f477a780ecc7cd129f751f9a7abe4d6210296a5[m
+Author: ytnuf <161308826+ytnuf@users.noreply.github.com>
+Date:   Mon Mar 10 13:28:37 2025 +0000
+
+    Remove unnecessary forced -fno-exceptions for web builds
+    
+    The SCons build doesn't do this, so neither should CMake
+    Excpetions are already handled by DISABLE_EXCEPTIONS option
+    
+    (cherry picked from commit 43690cb60b29c7668f7e9760cf766f7982637c77)
+
+[33mcommit 5ba2d9c9f64267ad7be4dea172e57e8ee39d0960[m
+Author: Samuel Nicholas <nicholas.samuel@gmail.com>
+Date:   Wed Mar 5 17:36:27 2025 +1030
+
+    CMake: default target when godot-cpp is top level
+    
+    People seem to want to build godot-cpp without any arguments, not even specifying a target.
+    
+    We have to detect if we are top level though because it conflicts with being consumed.
+    
+    (cherry picked from commit 8b33e7335324141438f495811884397b967f1f83)
+
+[33mcommit 4b5d800596f8ea74413dfd38531a2938d65b512d[m
+Author: Samuel Nicholas <nicholas.samuel@gmail.com>
+Date:   Sun Mar 2 12:04:30 2025 +1030
+
+    Updating commenting to be consistent
+    
+    (cherry picked from commit 671e309cfa2c06ab60cb528aa7937bf6d65c09c2)
+
+[33mcommit 8bdf9b82a2c3740042aae1745d734c3ac352662f[m
+Author: Samuel Nicholas <nicholas.samuel@gmail.com>
+Date:   Tue Feb 4 11:53:45 2025 +1030
+
+    add gersemi to pre-commit hooks for CMake formatting like black
+    
+    (cherry picked from commit 2f6d7f2dad44b40de5850c52a8f44cbc33c8d575)
+
+[33mcommit 714c9e2c165db2dcb7e6ea57e62a04204d3cfbfa[m[33m ([m[1;33mtag: [m[1;33mgodot-4.4-stable[m[33m)[m
+Author: David Snopek <dsnopek@gmail.com>
+Date:   Mon Mar 3 09:30:17 2025 -0600
+
+    gdextension: Sync with upstream commit 4c311cbee68c0b66ff8ebb8b0defdd9979dd2a41 (4.4-stable)
+
+[33mcommit 06082d77278e8f444db27e0944aab5f309d4fc72[m
+Merge: 26358b5 d0dd282
+Author: David Snopek <dsnopek@gmail.com>
+Date:   Sat Mar 1 10:49:38 2025 -0600
+
+    Merge pull request #1721 from enetheru/godotcpp
+    
+    CMake: Rename all GODOT_ to GODOTCPP_
+
+[33mcommit 26358b5e3a3e5a8f8abcd7283d6d0885209b1bde[m
+Merge: e381658 4a9409a
+Author: David Snopek <dsnopek@gmail.com>
+Date:   Sat Mar 1 08:21:53 2025 -0600
+
+    Merge pull request #1719 from dsnopek/gdvirtual-required-macros
+    
+    Update `GDVIRTUAL*()` macros to match Godot 4.4
+
+[33mcommit e3816585fee71a9ca7dc7e0c4724007d64b82e47[m
+Author: David Snopek <dsnopek@gmail.com>
+Date:   Fri Feb 28 19:24:25 2025 -0600
+
+    gdextension: Sync with upstream commit 15ff450680a40391aabbffde0a57ead2cd84db56 (4.4-rc3)
+
+[33mcommit d0dd282d739dbde209fd1c3987235365584d9c55[m
+Author: Samuel Nicholas <nicholas.samuel@gmail.com>
+Date:   Wed Feb 26 23:22:41 2025 +1030
+
+    CMake: Rename all GODOT_ to GODOTCPP_
+    
+    This is for discussion primarily at this stage.
+
+[33mcommit c8c25cd3129c1946288556f814842137afe7c018[m
+Merge: 375c0d1 e7f07da
+Author: David Snopek <dsnopek@gmail.com>
+Date:   Thu Feb 27 12:57:35 2025 -0600
+
+    Merge pull request #1720 from enetheru/generator_target
+    
+    CMake: Add generate_bindings custom target
+
+[33mcommit 4a9409a30f8669137d2b3d285d91ad2491da1172[m
+Author: David Snopek <dsnopek@gmail.com>
+Date:   Tue Feb 25 16:53:34 2025 -0600
+
+    Update `GDVIRTUAL*()` macros to match Godot 4.4
+
+[33mcommit 375c0d15755745408efa30dea2f522bbf512edd0[m
+Author: David Snopek <dsnopek@gmail.com>
+Date:   Wed Feb 26 07:51:29 2025 -0600
+
+    gdextension: Sync with upstream commit 01545c995b0612c68f9dfce8f6cc67576c298381 (4.4-rc2)
+
+[33mcommit e7f07dab87c0bb8e2953cef6a11279c02f661360[m
+Author: Samuel Nicholas <nicholas.samuel@gmail.com>
+Date:   Wed Feb 26 23:02:59 2025 +1030
+
+    CMake: Add generate_bindings custom target
+    
+    I was working on something today and wanted to just generate the bindings separately to compilation.
+    
+    This PR adds a custom target to do just that.
+
+[33mcommit 98ea2f60bb3846d6ae410d8936137d1b099cd50b[m
+Author: David Snopek <dsnopek@gmail.com>
+Date:   Mon Feb 24 10:35:53 2025 -0600
+
+    gdextension: Sync with upstream commit 8ed125b42908d0d46d3b8967e3a3bc03f809b3af (4.4-rc1)
+
+[33mcommit 48baa0c812e73a8eb5e107b4688814e8c4d42ab5[m
+Merge: 5eb6e6b 89fd276
+Author: David Snopek <dsnopek@gmail.com>
+Date:   Fri Feb 21 14:32:36 2025 -0600
+
+    Merge pull request #1713 from Repiteo/style/nodiscard
+    
+    Style: Replace `_NO_DISCARD_` macro with `[[nodiscard]]`
+
+[33mcommit 89fd27608fa9d10194cac76d19c7df4b92cbff30[m
+Author: Thaddeus Crews <repiteo@outlook.com>
+Date:   Thu Feb 20 09:23:08 2025 -0600
+
+    Style: Replace `_NO_DISCARD_` macro with `[[nodiscard]]`
+
+[33mcommit 5eb6e6bf61280eb56888e680961df6322ff70063[m
+Merge: 79f9bc9 23c2407
+Author: David Snopek <dsnopek@gmail.com>
+Date:   Mon Feb 17 15:26:44 2025 -0600
+
+    Merge pull request #1709 from enetheru/MinGWMakefiles
+    
+    CMake: Create destination folder for doc_source.cpp generation
+
+[33mcommit 23c24073f4ae43bdd3f93651a8765f43b1aab572[m
+Author: Samuel Nicholas <nicholas.samuel@gmail.com>
+Date:   Sat Jan 25 18:51:41 2025 +1030
+
+    CMake: Create destination folder for doc_source.cpp generation
+    
+    When compiling using 'MinGW Makefiles' the folders aren't created automatically.
+
+[33mcommit 79f9bc9600b9479d9bc0aaa99d7dd2e2f04f1555[m
+Merge: 3f54a86 9d9099a
+Author: David Snopek <dsnopek@gmail.com>
+Date:   Mon Feb 17 11:04:34 2025 -0600
+
+    Merge pull request #1708 from enetheru/arch_confusion
+    
+    CMake: Fix unknown architecture and simplify OSX_ARCHITECTURES
+
+[33mcommit 3f54a86554a72101740a46de2c9223a5f5d317ad[m
+Merge: 847dca4 35469fd
+Author: David Snopek <dsnopek@gmail.com>
+Date:   Mon Feb 17 11:04:25 2025 -0600
+
+    Merge pull request #1707 from enetheru/cmake_module
+    
+    CMake:
