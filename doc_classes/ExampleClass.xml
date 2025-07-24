@@ -1,296 +1,36 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="ExampleClass" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
 	<brief_description>
-		高级绳索物理模拟器
+		Verlet绳索系统的示例类。
 	</brief_description>
 	<description>
-		ExampleClass 是一个基于 Verlet 积分的高级绳索物理模拟器，支持实时弹性控制、节点操作和物理约束。适用于游戏中的绳索、链条、布料等柔体模拟。
-		
-		主要特性：
-		- 可调节的弹性参数（刚度、阻尼、约束强度等）
-		- 多种预设模式（刚性、弹性、柔软、弹跳）
-		- 节点锁定和质量控制
-		- 实时节点位置操作
-		- 绳索剪切和节点移除
-		- 重力和外力支持
+		一个用于演示的示例类。提供了类型检测和坐标点处理的基础功能。
+		这个类继承自RefCounted，可以安全地在Godot项目中使用。
 	</description>
 	<tutorials>
+		<link title="Verlet Integration Tutorial">https://en.wikipedia.org/wiki/Verlet_integration</link>
 	</tutorials>
 	<methods>
-		<!-- 核心弹性控制方法 -->
-		<method name="setElasticity">
+		<method name="print_type" qualifiers="const">
 			<return type="void" />
-			<param index="0" name="stiffness" type="float" />
-			<param index="1" name="damping" type="float" />
-			<param index="2" name="iterations" type="int" default="-1" />
-			<param index="3" name="constraint_strength" type="float" default="-1.0" />
-			<param index="4" name="stretch_resistance" type="float" default="-1.0" />
-			<param index="5" name="compression_resistance" type="float" default="-1.0" />
+			<param index="0" name="variant" type="Variant" />
 			<description>
-				设置绳索的弹性参数。
-				[param stiffness]: 刚度系数 (0.1-3.0)，控制绳索的硬度
-				[param damping]: 阻尼系数 (0.7-1.0)，控制能量损失
-				[param iterations]: 约束迭代次数 (1-20)，影响计算精度
-				[param constraint_strength]: 约束强度 (0.1-1.0)，控制约束修正力度
-				[param stretch_resistance]: 拉伸阻力 (0.5-2.0)，抵抗拉伸的程度
-				[param compression_resistance]: 压缩阻力 (0.5-2.0)，抵抗压缩的程度
+				打印传入变量的类型信息。
+				这个方法会在控制台输出"VerletRopeType: [类型ID]"的格式信息，用于调试和类型检查。
+				[param variant] 要检查类型的变量，可以是任何Godot支持的Variant类型。
 			</description>
 		</method>
-		
-		<method name="setElasticityPreset">
-			<return type="void" />
-			<param index="0" name="preset_name" type="String" />
-			<description>
-				使用预设的弹性模式。可用预设：
-				- "rigid": 刚性模式，适合不可拉伸的绳索
-				- "elastic": 弹性模式，平衡的弹性效果
-				- "soft": 柔软模式，高度可变形
-				- "bouncy": 弹跳模式，强烈的弹性反应
-			</description>
-		</method>
-		
-		<method name="setAdvancedElasticity">
-			<return type="void" />
-			<param index="0" name="params" type="Dictionary" />
-			<description>
-				通过字典设置高级弹性参数。支持的键值：
-				- "stiffness": 刚度
-				- "damping": 阻尼
-				- "iterations": 迭代次数
-				- "constraint_strength": 约束强度
-				- "stretch_resistance": 拉伸阻力
-				- "compression_resistance": 压缩阻力
-			</description>
-		</method>
-		
-		<method name="getElasticityParams" qualifiers="const">
-			<return type="Dictionary" />
-			<description>
-				获取当前的弹性参数字典。
-			</description>
-		</method>
-		
-		<!-- 实时调整方法 -->
-		<method name="adjustStiffness">
-			<return type="void" />
-			<param index="0" name="delta" type="float" />
-			<description>
-				实时调整刚度值。[param delta] 为调整量，可为正负值。
-			</description>
-		</method>
-		
-		<method name="adjustDamping">
-			<return type="void" />
-			<param index="0" name="delta" type="float" />
-			<description>
-				实时调整阻尼值。[param delta] 为调整量，可为正负值。
-			</description>
-		</method>
-		
-		<method name="adjustConstraintStrength">
-			<return type="void" />
-			<param index="0" name="delta" type="float" />
-			<description>
-				实时调整约束强度。[param delta] 为调整量，可为正负值。
-			</description>
-		</method>
-		
-		<!-- 物理模拟方法 -->
-		<method name="update_physics">
-			<return type="void" />
-			<param index="0" name="deltaTime" type="float" />
-			<description>
-				更新绳索物理模拟。通常在 _process() 中调用。
-			</description>
-		</method>
-		
-		<method name="apply_force">
-			<return type="void" />
-			<param index="0" name="node_index" type="int" />
-			<param index="1" name="force" type="Vector2" />
-			<description>
-				对指定节点施加外力。
-			</description>
-		</method>
-		
-		<method name="reset_rope">
-			<return type="void" />
-			<description>
-				重置绳索到初始状态。
-			</description>
-		</method>
-		
-		<!-- 节点操作方法 -->
-		<method name="set_node_position">
-			<return type="void" />
-			<param index="0" name="index" type="int" />
-			<param index="1" name="position" type="Vector2" />
-			<description>
-				设置指定节点的位置。
-			</description>
-		</method>
-		
-		<method name="move_node">
-			<return type="void" />
-			<param index="0" name="index" type="int" />
-			<param index="1" name="displacement" type="Vector2" />
-			<description>
-				移动指定节点相对位移。
-			</description>
-		</method>
-		
-		<method name="get_node_position" qualifiers="const">
-			<return type="Vector2" />
-			<param index="0" name="index" type="int" />
-			<description>
-				获取指定节点的位置。
-			</description>
-		</method>
-		
-		<method name="translate_all_nodes">
-			<return type="void" />
-			<param index="0" name="displacement" type="Vector2" />
-			<description>
-				移动所有节点相同的位移量。
-			</description>
-		</method>
-		
-		<method name="translate_nodes_range">
-			<return type="void" />
-			<param index="0" name="start_index" type="int" />
-			<param index="1" name="end_index" type="int" />
-			<param index="2" name="displacement" type="Vector2" />
-			<description>
-				移动指定范围内的节点。
-			</description>
-		</method>
-		
-		<method name="setNodeLocked">
-			<return type="void" />
-			<param index="0" name="index" type="int" />
-			<param index="1" name="locked" type="bool" />
-			<description>
-				设置节点的锁定状态。锁定的节点不会受物理影响。
-			</description>
-		</method>
-		
-		<method name="setNodeMass">
-			<return type="void" />
-			<param index="0" name="index" type="int" />
-			<param index="1" name="mass" type="float" />
-			<description>
-				设置节点的质量。影响节点在约束求解中的权重。
-			</description>
-		</method>
-		
-		<method name="remove_node">
-			<return type="void" />
-			<param index="0" name="index" type="int" />
-			<description>
-				移除指定索引的节点。会重新计算绳索长度。
-			</description>
-		</method>
-		
-		<method name="cut_rope_at">
-			<return type="void" />
-			<param index="0" name="index" type="int" />
-			<description>
-				在指定位置剪断绳索，移除该位置之后的所有节点。
-			</description>
-		</method>
-		
-		<!-- 查询方法 -->
-		<method name="get_node_positions" qualifiers="const">
+		<method name="double_points" qualifiers="const">
 			<return type="Array" />
+			<param index="0" name="points" type="Array" />
 			<description>
-				获取所有节点的位置数组。
-			</description>
-		</method>
-		
-		<method name="get_current_node_count" qualifiers="const">
-			<return type="int" />
-			<description>
-				获取当前节点数量。
-			</description>
-		</method>
-		
-		<!-- 属性访问器 -->
-		<method name="set_stiffness">
-			<return type="void" />
-			<param index="0" name="value" type="float" />
-			<description>
-				设置刚度值 (0.1-3.0)。
-			</description>
-		</method>
-		
-		<method name="get_stiffness" qualifiers="const">
-			<return type="float" />
-			<description>
-				获取当前刚度值。
-			</description>
-		</method>
-		
-		<method name="set_damping">
-			<return type="void" />
-			<param index="0" name="value" type="float" />
-			<description>
-				设置阻尼值 (0.7-1.0)。
-			</description>
-		</method>
-		
-		<method name="get_damping" qualifiers="const">
-			<return type="float" />
-			<description>
-				获取当前阻尼值。
-			</description>
-		</method>
-		
-		<method name="set_constraint_iterations">
-			<return type="void" />
-			<param index="0" name="value" type="int" />
-			<description>
-				设置约束迭代次数 (1-20)。
-			</description>
-		</method>
-		
-		<method name="get_constraint_iterations" qualifiers="const">
-			<return type="int" />
-			<description>
-				获取当前约束迭代次数。
-			</description>
-		</method>
-		
-		<method name="set_constraint_strength">
-			<return type="void" />
-			<param index="0" name="value" type="float" />
-			<description>
-				设置约束强度 (0.1-1.0)。
-			</description>
-		</method>
-		
-		<method name="get_constraint_strength" qualifiers="const">
-			<return type="float" />
-			<description>
-				获取当前约束强度。
+				将输入的Vector2坐标点数组中每个点的坐标值翻倍。
+				这个方法遍历输入数组，对每个Vector2类型的元素进行坐标翻倍处理（x*2, y*2），
+				并返回包含处理后坐标的新数组。如果数组中包含非Vector2类型的元素，会跳过并输出错误信息。
+				[param points] 包含Vector2坐标点的数组。
+				[b]返回值：[/b] 包含翻倍后坐标点的新Array。
+				[b]注意：[/b] 输入数组中的非Vector2元素会被跳过，并在控制台输出警告信息。
 			</description>
 		</method>
 	</methods>
-	
-	<members>
-		<member name="node_count" type="int" setter="set_node_count" getter="get_node_count" default="10">
-			绳索节点数量 (2-100)。更多节点提供更平滑的效果但消耗更多性能。
-		</member>
-		
-		<member name="rope_length" type="float" setter="set_rope_length" getter="get_rope_length" default="5.0">
-			绳索总长度 (0.1-50.0)。
-		</member>
-		
-		<member name="gravity" type="Vector2" setter="set_gravity" getter="get_gravity" default="Vector2(0, 9.8)">
-			重力向量。影响所有未锁定的节点。
-		</member>
-		
-		<member name="debug_draw" type="bool" setter="set_debug_draw" getter="is_debug_drawing" default="true">
-			是否启用调试绘制。
-		</member>
-	</members>
 </class>
