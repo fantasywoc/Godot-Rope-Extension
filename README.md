@@ -1,7 +1,11 @@
 # Godot C++ 绳索物理模拟器项目
 
 ## 项目概述
+# Godot C++ 绳索物理模拟器项目
 
+## 项目概述
+
+这是一个基于 Godot 4 和 C++ 的高级绳索物理模拟器项目，使用 GDExtension 技术实现了高性能的柔体物理模拟。
 这是一个基于 Godot 4 和 C++ 的高级绳索物理模拟器项目，使用 GDExtension 技术实现了高性能的柔体物理模拟。
 # 编译
 
@@ -12,6 +16,11 @@ scons -c
 scons
 ```
 ### release版本
+```bash
+scons target=template_release precision=single
+scons target=template_release precision=double
+
+```
 ```bash
 scons target=template_release precision=single
 scons target=template_release precision=double
