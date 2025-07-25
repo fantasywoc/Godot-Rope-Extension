@@ -32,12 +32,23 @@ var positions_dirty: bool = true
 var base_rope_length: float = 500.0  # 基准绳长
 var desired_display_length: float = 600.0  # 期望的显示长度（像素）
 
-@export  var scale_factor: float = 5.0  # 每一节绳子的像素长度
-@export var rope_node_count:int =100; #绳子节点数
-@export var rope_gravity = 9.8;   #重力加速度
-@export var ropeColor = Color.DARK_GOLDENROD
+var scale_factor: float = 5.0  # 每一节绳子的像素长度
+var rope_node_count:int =10; #绳子节点数
+var rope_gravity = 9.8;   #重力加速度
+var ropeColor = Color.DARK_GOLDENROD
+var lineWith = 7.0;
+var nomal_node_size = lineWith ;
+
+@onready var rope_node: Marker2D = $".."
 
 func _ready():
+	# 从父节点获取参数并赋值给当前节点
+	scale_factor = rope_node.scale_factor
+	rope_node_count = rope_node.rope_node_count
+	rope_gravity = rope_node.rope_gravity
+	ropeColor = rope_node.ropeColor
+	lineWith = rope_node.lineWith
+
 	# 创建绘制节点
 	draw_node = Node2D.new()
 	add_child(draw_node)
@@ -50,8 +61,8 @@ func _ready():
 	click_timer.timeout.connect(_on_single_click_confirmed)
 	add_child(click_timer)
 	
-	# 获取屏幕中心
-	screen_center = get_viewport().get_visible_rect().size / 2
+	# 修改：使用父节点的全局位置而不是屏幕中心
+	screen_center = rope_node.global_position
 	
 	# 创建并配置绳索模拟器
 	rope_simulator = ExampleClass.new()
@@ -87,17 +98,17 @@ func setup_rope_parameters():
 	# 	0.2,   # 很低拉伸阻力 - 关键！
 	# 	1.5    # 较高压缩阻力
 	# )
-
-	# 温和刚性配置 - 避免过度修正
-	var gentle_rigid_params = {
-		"stiffness": 0.4,              # 较低刚度避免过度修正
-		"damping": 0.98,              # 高阻尼
-		"iterations": 5,             # 更多迭代补偿较低刚度
-		"constraint_strength": 0.2,    # 较强约束但不是最强
-		"stretch_resistance": 0.3,     # 适中阻力
-		"compression_resistance": 1.6   # 稍强压缩阻力
-	}
-	rope_simulator.setAdvancedElasticity(gentle_rigid_params)
+	rope_simulator.setElasticityPreset("rigid")
+	## 温和刚性配置 - 避免过度修正
+	#var gentle_rigid_params = {
+		#"stiffness": 0.4,              # 较低刚度避免过度修正
+		#"damping": 0.98,              # 高阻尼
+		#"iterations": 5,             # 更多迭代补偿较低刚度
+		#"constraint_strength": 0.2,    # 较强约束但不是最强
+		#"stretch_resistance": 0.3,     # 适中阻力
+		#"compression_resistance": 1.6   # 稍强压缩阻力
+	#}
+	#rope_simulator.setAdvancedElasticity(gentle_rigid_params)
 
 
 
@@ -359,7 +370,7 @@ func _on_draw():
 	for i in range(positions.size() - 1):
 		var start_pos = positions[i] * scale_factor + screen_center
 		var end_pos = positions[i + 1] * scale_factor + screen_center
-		draw_node.draw_line(start_pos, end_pos, ropeColor, 5.0)
+		draw_node.draw_line(start_pos, end_pos, ropeColor, lineWith)
 	
 	# 绘制节点
 	for i in range(positions.size()):
@@ -372,15 +383,15 @@ func _on_draw():
 		if is_dragging and i == dragged_node_index:
 			# 拖拽中的节点
 			node_color = Color.CYAN
-			node_size = 6.0
+			node_size = nomal_node_size +3
 		elif is_node_locked(i):
 			# 锁定的节点
 			node_color = Color.DARK_BLUE
-			node_size = 5.0
+			node_size = nomal_node_size + 2
 		else:
 			# 普通节点
 			node_color = ropeColor
-			node_size = 4.0
+			node_size = nomal_node_size
 		
 		draw_node.draw_circle(pos, node_size, node_color)
 		

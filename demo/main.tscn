@@ -1,9 +1,16 @@
 [gd_scene load_steps=2 format=3 uid="uid://ucg5oc7o3ns5"]
 
-[ext_resource type="PackedScene" uid="uid://dh0oj81pufivs" path="res://example.tscn" id="1_ig7tw"]
+[ext_resource type="PackedScene" uid="uid://dh0oj81pufivs" path="res://Rope.tscn" id="1_ig7tw"]
 
 [node name="Node2D" type="Node2D"]
+position = Vector2(4, -2)
 
 [node name="RopeNode" parent="." instance=ExtResource("1_ig7tw")]
-position = Vector2(349, 211)
-gizmo_extents = 33.8
+position = Vector2(666, 181)
+scale_factor = 10.0
+rope_node_count = 30
+ropeColor = Color(0.99701, 0.563736, 0.449278, 1)
+
+[node name="RopeNode2" parent="." instance=ExtResource("1_ig7tw")]
+scale_factor = 5.0
+ropeColor = Color(0.114103, 0.649434, 0.581921, 1)

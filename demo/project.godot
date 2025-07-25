@@ -14,3 +14,8 @@ config/name="godot cpp template"
 run/main_scene="uid://dh0oj81pufivs"
 config/features=PackedStringArray("4.4", "Forward Plus")
 config/icon="res://icon.svg"
+
+[rendering]
+
+viewport/hdr_2d=true
+viewport/transparent_background=true

@@ -1,0 +1,12 @@
+[gd_scene load_steps=3 format=3 uid="uid://dh0oj81pufivs"]
+
+[ext_resource type="Script" uid="uid://burfo8d1xeo8p" path="res://rope_demo.gd" id="1_2jas5"]
+[ext_resource type="Script" uid="uid://dlkerdh47f27i" path="res://Rope.gd" id="1_n51mc"]
+
+[node name="RopeNode" type="Marker2D"]
+position = Vector2(144, 158)
+script = ExtResource("1_n51mc")
+ropeColor = Color(0.782497, 0.462995, 0.421711, 1)
+
+[node name="Node" type="Node" parent="."]
+script = ExtResource("1_2jas5")
