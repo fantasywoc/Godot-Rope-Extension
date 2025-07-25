@@ -116,19 +116,21 @@ void ExampleClass::update_physics(float deltaTime) {
         return;
     }
 
-    // 韦尔莱积分更新位置（应用阻尼）
+    // 增加重力影响的时间步长倍数
+    float gravity_multiplier = 2.0f;  // 增加这个倍数
+    
+    // 韦尔莱积分更新位置
     for (auto& node : nodes) {
         if (node.locked) continue;
         
         Vector2 velocity = node.position - node.oldPosition;
-        // 应用阻尼
         velocity *= elasticity.damping;
         
         node.oldPosition = node.position;
-        node.position += velocity + physics_gravity * deltaTime * deltaTime;
+        // 增强重力效果
+        node.position += velocity + physics_gravity * deltaTime * deltaTime * gravity_multiplier;
     }
 
-    // 应用约束
     applyConstraints(deltaTime);
 }
 

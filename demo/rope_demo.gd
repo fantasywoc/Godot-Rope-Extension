@@ -35,7 +35,7 @@ var desired_display_length: float = 600.0  # 期望的显示长度（像素）
 @export  var scale_factor: float = 5.0  # 每一节绳子的像素长度
 @export var rope_node_count:int =100; #绳子节点数
 @export var rope_gravity = 9.8;   #重力加速度
-
+@export var ropeColor = Color.DARK_GOLDENROD
 
 func _ready():
 	# 创建绘制节点
@@ -90,12 +90,12 @@ func setup_rope_parameters():
 
 	# 温和刚性配置 - 避免过度修正
 	var gentle_rigid_params = {
-		"stiffness": 0.8,              # 较低刚度避免过度修正
+		"stiffness": 0.4,              # 较低刚度避免过度修正
 		"damping": 0.98,              # 高阻尼
-		"iterations": 15,             # 更多迭代补偿较低刚度
-		"constraint_strength": 0.8,    # 较强约束但不是最强
-		"stretch_resistance": 0.9,     # 适中阻力
-		"compression_resistance": 1.5   # 稍强压缩阻力
+		"iterations": 5,             # 更多迭代补偿较低刚度
+		"constraint_strength": 0.2,    # 较强约束但不是最强
+		"stretch_resistance": 0.3,     # 适中阻力
+		"compression_resistance": 1.6   # 稍强压缩阻力
 	}
 	rope_simulator.setAdvancedElasticity(gentle_rigid_params)
 
@@ -264,7 +264,7 @@ func adjust_segment_length(delta: float):
 func adjust_gravity(delta: float):
 	"""调整重力大小"""
 	rope_gravity = clamp(rope_gravity + delta, 0.0, 20.0)
-	rope_simulator.set_gravity(Vector2(0, rope_gravity * 10))
+	rope_simulator.set_gravity(Vector2(0, rope_gravity * 2))
 
 # 新增：通过段长度设置绳子函数
 func setup_rope_by_segment_length():
@@ -359,7 +359,7 @@ func _on_draw():
 	for i in range(positions.size() - 1):
 		var start_pos = positions[i] * scale_factor + screen_center
 		var end_pos = positions[i + 1] * scale_factor + screen_center
-		draw_node.draw_line(start_pos, end_pos, Color.DARK_GOLDENROD, 5.0)
+		draw_node.draw_line(start_pos, end_pos, ropeColor, 5.0)
 	
 	# 绘制节点
 	for i in range(positions.size()):
@@ -379,7 +379,7 @@ func _on_draw():
 			node_size = 5.0
 		else:
 			# 普通节点
-			node_color = Color.DARK_GOLDENROD
+			node_color = ropeColor
 			node_size = 4.0
 		
 		draw_node.draw_circle(pos, node_size, node_color)
