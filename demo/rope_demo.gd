@@ -31,7 +31,11 @@ var positions_dirty: bool = true
 # 在变量声明区域修改
 var base_rope_length: float = 500.0  # 基准绳长
 var desired_display_length: float = 600.0  # 期望的显示长度（像素）
-var scale_factor: float = 10.0  # 将根据绳长动态计算
+
+@export  var scale_factor: float = 5.0  # 每一节绳子的像素长度
+@export var rope_node_count:int =10; #绳子节点数
+@export var rope_gravity = 9.8;   #重力加速度
+
 
 func _ready():
 	# 创建绘制节点
@@ -67,9 +71,9 @@ func _ready():
 
 # 在 setup_rope_parameters 函数中添加弹性设置
 func setup_rope_parameters():
-	rope_simulator.set_node_count(30)
+	rope_simulator.set_node_count(rope_node_count)
 	rope_simulator.set_rope_length(base_rope_length)  # 使用变量
-	rope_simulator.set_gravity(Vector2(0, 98))
+	rope_simulator.set_gravity(Vector2(0, rope_gravity*10))
 	
 	# === 弹性控制示例 ===
 	
@@ -84,25 +88,14 @@ func setup_rope_parameters():
 	# 	1.5    # 较高压缩阻力
 	# )
 
-#    # 完全自定义参数，彻底消除收缩
-# 	var no_shrink_params = {
-# 		"stiffness": 0.1,              # 最低刚度
-# 		"damping": 1.0,                # 最高阻尼
-# 		"iterations": 3,               # 最少迭代
-# 		"constraint_strength": 5.0,    # 最低约束强度
-# 		"stretch_resistance": 0.1,     # 几乎不抵抗拉伸
-# 		"compression_resistance": 3.0   # 强烈抵抗压缩
-# 	}
-# 	rope_simulator.setAdvancedElasticity(no_shrink_params)
-
 	# 温和刚性配置 - 避免过度修正
 	var gentle_rigid_params = {
 		"stiffness": 0.8,              # 较低刚度避免过度修正
 		"damping": 0.98,              # 高阻尼
 		"iterations": 15,             # 更多迭代补偿较低刚度
 		"constraint_strength": 0.8,    # 较强约束但不是最强
-		"stretch_resistance": 0.8,     # 适中阻力
-		"compression_resistance": 1.2   # 稍强压缩阻力
+		"stretch_resistance": 0.9,     # 适中阻力
+		"compression_resistance": 1.5   # 稍强压缩阻力
 	}
 	rope_simulator.setAdvancedElasticity(gentle_rigid_params)
 
@@ -295,10 +288,13 @@ func _on_draw():
 			draw_node.draw_string(font, pos + Vector2(8, 0), str(i), HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color.WHITE)
 
 func remove_middle_node():
+	# ✅ 修复：使用实际的节点数量
 	var current_count = rope_simulator.get_current_node_count()
 	if current_count > 3:
 		var middle_index = current_count / 2
 		rope_simulator.remove_node(middle_index)
+		# 添加索引更新
+		update_locked_nodes_after_removal(middle_index)
 		positions_dirty = true
 
 
@@ -376,7 +372,8 @@ func get_cached_positions() -> Array:
 	"""获取缓存的节点位置"""
 	if positions_dirty or cached_positions.is_empty():
 		cached_positions.clear()
-		var node_count = rope_simulator.get_node_count()
+		# ✅ 修复：使用实际的节点数量
+		var node_count = rope_simulator.get_current_node_count()
 		for i in range(node_count):
 			cached_positions.append(rope_simulator.get_node_position(i))
 		positions_dirty = false
@@ -471,6 +468,8 @@ func cut_rope_from_node(node_index: int):
 	# 如果点击的是最后一个节点，则移除它
 	if node_index == current_count - 1:
 		rope_simulator.remove_node(node_index)
+		# 更新锁定节点索引
+		update_locked_nodes_after_removal(node_index)
 		positions_dirty = true
 		print("移除了最后一个节点: ", node_index)
 		return
@@ -484,8 +483,44 @@ func cut_rope_from_node(node_index: int):
 		if remove_index >= node_index:
 			rope_simulator.remove_node(remove_index)
 	
+	# ✅ 关键修复：更新锁定节点索引
+	update_locked_nodes_after_batch_removal(node_index)
+	
 	positions_dirty = true
 	print("从节点 ", node_index, " 剪断到末尾，移除了 ", nodes_to_remove, " 个节点")
+
+# 新增：单个节点移除后的索引更新
+func update_locked_nodes_after_removal(removed_index: int):
+	"""更新单个节点移除后的锁定索引"""
+	var updated_locked_nodes = []
+	
+	for locked_index in locked_nodes:
+		if locked_index < removed_index:
+			# 在移除节点之前的索引保持不变
+			updated_locked_nodes.append(locked_index)
+		elif locked_index > removed_index:
+			# 在移除节点之后的索引需要减1
+			updated_locked_nodes.append(locked_index - 1)
+		# locked_index == removed_index 的节点被移除，不添加到新数组
+	
+	locked_nodes = updated_locked_nodes
+	if debug_enabled:
+		print("更新锁定节点索引: ", locked_nodes)
+
+# 新增：批量节点移除后的索引更新
+func update_locked_nodes_after_batch_removal(cut_index: int):
+	"""更新批量节点移除后的锁定索引"""
+	var updated_locked_nodes = []
+	
+	for locked_index in locked_nodes:
+		if locked_index < cut_index:
+			# 只保留在切断点之前的锁定节点
+			updated_locked_nodes.append(locked_index)
+		# 切断点及之后的所有锁定节点都被移除
+	
+	locked_nodes = updated_locked_nodes
+	if debug_enabled:
+		print("批量移除后更新锁定节点索引: ", locked_nodes)
 
 # 修改 stop_drag 函数，添加可选参数控制是否解锁节点
 func stop_drag(keep_locked: bool = false):

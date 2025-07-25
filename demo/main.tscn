@@ -1,0 +1,9 @@
+[gd_scene load_steps=2 format=3 uid="uid://ucg5oc7o3ns5"]
+
+[ext_resource type="PackedScene" uid="uid://dh0oj81pufivs" path="res://example.tscn" id="1_ig7tw"]
+
+[node name="Node2D" type="Node2D"]
+
+[node name="RopeNode" parent="." instance=ExtResource("1_ig7tw")]
+position = Vector2(349, 211)
+gizmo_extents = 33.8

@@ -35,26 +35,26 @@ void ExampleClass::setElasticity(float stiffness, float damping, int iterations,
         elasticity.compression_resistance = Math::clamp(compression_resistance, 0.5f, 2.0f);
     }
     
-    UtilityFunctions::print("弹性参数已更新 - 刚度:", elasticity.stiffness, 
-                           " 阻尼:", elasticity.damping, 
-                           " 迭代:", elasticity.constraint_iterations);
+    UtilityFunctions::print("Elasticity parameters updated - Stiffness:", elasticity.stiffness, 
+                           " Damping:", elasticity.damping, 
+                           " Iterations:", elasticity.constraint_iterations);
 }
 
 void ExampleClass::setElasticityPreset(const String& preset_name) {
     if (preset_name == "rigid") {
         elasticity.setRigid();
-        UtilityFunctions::print("已设置为刚性模式");
+        UtilityFunctions::print("Set to rigid mode");
     } else if (preset_name == "elastic") {
         elasticity.setElastic();
-        UtilityFunctions::print("已设置为弹性模式");
+        UtilityFunctions::print("Set to elastic mode");
     } else if (preset_name == "soft") {
         elasticity.setSoft();
-        UtilityFunctions::print("已设置为柔软模式");
+        UtilityFunctions::print("Set to soft mode");
     } else if (preset_name == "bouncy") {
         elasticity.setBouncy();
-        UtilityFunctions::print("已设置为弹跳模式");
+        UtilityFunctions::print("Set to bouncy mode");
     } else {
-        UtilityFunctions::print("未知的弹性预设:", preset_name);
+        UtilityFunctions::print("Unknown elasticity preset:", preset_name);
     }
 }
 
@@ -78,7 +78,7 @@ void ExampleClass::setAdvancedElasticity(const Dictionary& params) {
         elasticity.compression_resistance = Math::clamp(float(params["compression_resistance"]), 0.5f, 2.0f);
     }
     
-    UtilityFunctions::print("高级弹性参数已更新");
+    UtilityFunctions::print("Advanced elasticity parameters updated");
 }
 
 Dictionary ExampleClass::getElasticityParams() const {
@@ -95,18 +95,17 @@ Dictionary ExampleClass::getElasticityParams() const {
 // 替换现有的中文输出
 void ExampleClass::adjustStiffness(float delta) {
     elasticity.stiffness = Math::clamp(elasticity.stiffness + delta, 0.1f, 3.0f);
-    // 使用u8字符串字面量确保UTF-8编码
-    UtilityFunctions::print(u8"刚度调整为:", elasticity.stiffness);
+    UtilityFunctions::print("Stiffness adjusted to:", elasticity.stiffness);
 }
 
 void ExampleClass::adjustDamping(float delta) {
     elasticity.damping = Math::clamp(elasticity.damping + delta, 0.7f, 1.0f);
-    UtilityFunctions::print(u8"阻尼调整为:", elasticity.damping);
+    UtilityFunctions::print("Damping adjusted to:", elasticity.damping);
 }
 
 void ExampleClass::adjustConstraintStrength(float delta) {
     elasticity.constraint_strength = Math::clamp(elasticity.constraint_strength + delta, 0.1f, 1.0f);
-    UtilityFunctions::print(u8"约束强度调整为:", elasticity.constraint_strength);
+    UtilityFunctions::print("Constraint strength adjusted to:", elasticity.constraint_strength);
 }
 
 // === 优化的物理更新函数 ===
@@ -321,6 +320,9 @@ void ExampleClass::remove_node(int index) {
     
     // 移除节点
     nodes.erase(nodes.begin() + index);
+    
+    // ✅ 添加：同步更新配置的节点数量
+    node_count = static_cast<int>(nodes.size());
     
     // 重新计算段长度，基于实际剩余节点的距离
     float total_length = 0.0f;
