@@ -92,12 +92,13 @@ private:
     int node_count = 10;
     float rope_length = 5.0;
     Vector2 gravity = Vector2(0, 9.8);
+    float default_node_mass = 1.0f;
     
-    // 内部方法
+    // 添加缺失的私有函数声明
     void update_simulator();
     void initializeRope(int numNodes, float totalLength, Vector2 startPos);
-    void applyConstraints(float deltaTime);
     void freezeInitialState();
+    void applyConstraints(float deltaTime);
     void applyForce(int node_index, Vector2 force, float deltaTime);
 
 protected:
@@ -106,6 +107,10 @@ protected:
 public:
     ExampleClass();
     ~ExampleClass();
+    
+    // 添加默认节点质量访问器
+    void set_default_node_mass(float mass);
+    float get_default_node_mass() const;
     
     // === 核心弹性控制函数 ===
     void setElasticity(float stiffness, float damping, int iterations = -1, 
@@ -145,6 +150,16 @@ public:
     void remove_node(int index);
     void cut_rope_at(int index);
     int get_current_node_count() const;
+    
+    // 新增：节点增加函数
+    void add_node_at(int index, Vector2 position = Vector2(0, 0));
+    void add_node_to_end();
+    void add_nodes_to_end(int count);
+    void insert_node_between(int index1, int index2);
+    
+    // 新增：批量节点操作
+    void extend_rope_by_length(float additional_length);
+    void extend_rope_by_nodes(int additional_nodes);
     
     // 节点位置操作函数
     void set_node_position(int index, Vector2 position);

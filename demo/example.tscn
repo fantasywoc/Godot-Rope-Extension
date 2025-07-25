@@ -6,3 +6,5 @@
 
 [node name="Node" type="Node" parent="."]
 script = ExtResource("1_2jas5")
+scale_factor = 2.0
+rope_node_count = 20

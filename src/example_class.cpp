@@ -213,9 +213,25 @@ void ExampleClass::_bind_methods() {
     ClassDB::bind_method(D_METHOD("reset_rope"), &ExampleClass::reset_rope);
     ClassDB::bind_method(D_METHOD("setNodeLocked", "index", "locked"), &ExampleClass::setNodeLocked);
     ClassDB::bind_method(D_METHOD("setNodeMass", "index", "mass"), &ExampleClass::setNodeMass);
+    
+    // 现有节点操作
     ClassDB::bind_method(D_METHOD("remove_node", "index"), &ExampleClass::remove_node);
     ClassDB::bind_method(D_METHOD("cut_rope_at", "index"), &ExampleClass::cut_rope_at);
     ClassDB::bind_method(D_METHOD("get_current_node_count"), &ExampleClass::get_current_node_count);
+    
+    // 新增：节点添加函数
+    ClassDB::bind_method(D_METHOD("add_node_at", "index", "position"), &ExampleClass::add_node_at, DEFVAL(Vector2(0, 0)));
+    ClassDB::bind_method(D_METHOD("add_node_to_end"), &ExampleClass::add_node_to_end);
+    ClassDB::bind_method(D_METHOD("add_nodes_to_end", "count"), &ExampleClass::add_nodes_to_end);
+    ClassDB::bind_method(D_METHOD("insert_node_between", "index1", "index2"), &ExampleClass::insert_node_between);
+    
+    // 新增：批量操作函数
+    ClassDB::bind_method(D_METHOD("extend_rope_by_length", "additional_length"), &ExampleClass::extend_rope_by_length);
+    ClassDB::bind_method(D_METHOD("extend_rope_by_nodes", "additional_nodes"), &ExampleClass::extend_rope_by_nodes);
+    
+    // 新增：默认质量设置
+    ClassDB::bind_method(D_METHOD("set_default_node_mass", "mass"), &ExampleClass::set_default_node_mass);
+    ClassDB::bind_method(D_METHOD("get_default_node_mass"), &ExampleClass::get_default_node_mass);
     
     // 注册属性
     ADD_PROPERTY(PropertyInfo(Variant::INT, "node_count", PROPERTY_HINT_RANGE, "2,100"), "set_node_count", "get_node_count");
@@ -481,15 +497,22 @@ Vector2 ExampleClass::get_node_velocity(int index) const {
 // 在 #include 语句之后添加
 
 ExampleClass::ExampleClass() {
-    // 初始化默认值
-    isInitialized = false;
-    debug_draw = true;
-    rope_color = Color(0.8, 0.2, 0.2);
-    node_count = 10;
-    rope_length = 5.0;
-    gravity = Vector2(0, 9.8);
-    physics_gravity = gravity;
+    node_count = 20;
+    rope_length = 1.0f;
+    gravity = Vector2(0, 9.8f);
+    physics_gravity = Vector2(0, 9.8f);
     segmentLength = 0.1f;
+    debug_draw = true;
+    isInitialized = false;
+    default_node_mass = 1.0f;  // 初始化默认节点质量
+    
+    // 初始化弹性参数
+    elasticity.constraint_iterations = 5;
+    elasticity.stiffness = 1.0f;
+    elasticity.damping = 0.99f;
+    elasticity.constraint_strength = 0.5f;
+    elasticity.stretch_resistance = 1.0f;
+    elasticity.compression_resistance = 1.0f;
 }
 
 ExampleClass::~ExampleClass() {
@@ -533,17 +556,16 @@ void ExampleClass::initializeRope(int numNodes, float totalLength, Vector2 start
     nodes.clear();
     nodes.reserve(numNodes);
     
-    // 保持固定的段长度，而不是固定总长度
-    float desiredSegmentLength = 10.0f;  // 固定每段长度
-    segmentLength = desiredSegmentLength;
+    // 计算段长度
+    segmentLength = totalLength / (numNodes - 1);
     
-    // 重新计算实际总长度
-    rope_length = segmentLength * (numNodes - 1);
-    
+    // 创建节点
     for (int i = 0; i < numNodes; ++i) {
         Vector2 position = startPos + Vector2(0, i * segmentLength);
-        nodes.emplace_back(position, 1.0f, i == 0);
+        nodes.emplace_back(position, default_node_mass, i == 0);
     }
+    
+    isInitialized = true;
 }
 
 // 添加缺失的函数实现
@@ -565,4 +587,169 @@ void ExampleClass::setNodeLocked(int index, bool locked) {
     
     nodes[index].locked = locked;
     UtilityFunctions::print("Set node ", index, " locked state to: ", locked);
+}
+
+// 在指定位置插入节点
+void ExampleClass::add_node_at(int index, Vector2 position) {
+    if (index < 0 || index > static_cast<int>(nodes.size())) {
+        UtilityFunctions::print("Error: Invalid insertion index");
+        return;
+    }
+    
+    if (nodes.size() >= 100) {
+        UtilityFunctions::print("Error: Maximum node count reached");
+        return;
+    }
+    
+    Vector2 insert_position;
+    
+    // 如果没有指定位置，计算插入位置
+    if (position == Vector2(0, 0)) {
+        if (index == 0) {
+            // 在开头插入，位置在第一个节点之前
+            insert_position = nodes[0].position - Vector2(0, segmentLength);
+        } else if (index == static_cast<int>(nodes.size())) {
+            // 在末尾插入，位置在最后一个节点之后
+            insert_position = nodes.back().position + Vector2(0, segmentLength);
+        } else {
+            // 在中间插入，位置在两个节点的中点
+            insert_position = (nodes[index - 1].position + nodes[index].position) * 0.5f;
+        }
+    } else {
+        insert_position = position;
+    }
+    
+    // 创建新节点
+    RopeNode new_node(insert_position, default_node_mass, false);
+    
+    // 插入节点
+    nodes.insert(nodes.begin() + index, new_node);
+    
+    // 更新节点数量
+    node_count = static_cast<int>(nodes.size());
+    
+    // 重新计算段长度
+    if (nodes.size() > 1) {
+        float total_length = 0.0f;
+        for (int i = 0; i < static_cast<int>(nodes.size()) - 1; ++i) {
+            total_length += (nodes[i + 1].position - nodes[i].position).length();
+        }
+        segmentLength = total_length / (nodes.size() - 1);
+        rope_length = total_length;
+    }
+    
+    UtilityFunctions::print("Added node at index ", index, ", current nodes: ", nodes.size(), ", segment length: ", segmentLength);
+}
+
+// 在绳子末尾添加一个节点
+void ExampleClass::add_node_to_end() {
+    if (nodes.size() >= 100) {
+        UtilityFunctions::print("Error: Maximum node count reached");
+        return;
+    }
+    
+    if (nodes.empty()) {
+        UtilityFunctions::print("Error: No existing nodes to extend from");
+        return;
+    }
+    
+    // 计算新节点位置（在最后一个节点下方）
+    Vector2 last_pos = nodes.back().position;
+    Vector2 new_position;
+    
+    if (nodes.size() >= 2) {
+        // 基于最后两个节点的方向延伸
+        Vector2 direction = (nodes.back().position - nodes[nodes.size() - 2].position).normalized();
+        new_position = last_pos + direction * segmentLength;
+    } else {
+        // 只有一个节点时，向下延伸
+        new_position = last_pos + Vector2(0, segmentLength);
+    }
+    
+    // 创建新节点
+    RopeNode new_node(new_position, default_node_mass, false);
+    nodes.push_back(new_node);
+    
+    // 更新参数
+    node_count = static_cast<int>(nodes.size());
+    rope_length = segmentLength * (node_count - 1);
+    
+    UtilityFunctions::print("Added node to end, current nodes: ", nodes.size(), ", new length: ", rope_length);
+}
+
+// 在绳子末尾添加多个节点
+void ExampleClass::add_nodes_to_end(int count) {
+    if (count <= 0) {
+        UtilityFunctions::print("Error: Invalid node count");
+        return;
+    }
+    
+    if (nodes.size() + count > 100) {
+        UtilityFunctions::print("Error: Would exceed maximum node count");
+        return;
+    }
+    
+    for (int i = 0; i < count; ++i) {
+        add_node_to_end();
+    }
+    
+    UtilityFunctions::print("Added ", count, " nodes to end, total nodes: ", nodes.size());
+}
+
+// 在两个节点之间插入一个节点
+void ExampleClass::insert_node_between(int index1, int index2) {
+    if (index1 < 0 || index2 < 0 || 
+        index1 >= static_cast<int>(nodes.size()) || 
+        index2 >= static_cast<int>(nodes.size()) ||
+        abs(index1 - index2) != 1) {
+        UtilityFunctions::print("Error: Invalid indices for insertion between nodes");
+        return;
+    }
+    
+    int insert_index = Math::max(index1, index2);
+    Vector2 mid_position = (nodes[index1].position + nodes[index2].position) * 0.5f;
+    
+    add_node_at(insert_index, mid_position);
+    
+    UtilityFunctions::print("Inserted node between ", index1, " and ", index2);
+}
+
+// 通过增加长度来扩展绳子
+void ExampleClass::extend_rope_by_length(float additional_length) {
+    if (additional_length <= 0) {
+        UtilityFunctions::print("Error: Invalid additional length");
+        return;
+    }
+    
+    // 计算需要添加的节点数
+    int additional_nodes = static_cast<int>(additional_length / segmentLength);
+    if (additional_nodes == 0) {
+        additional_nodes = 1;  // 至少添加一个节点
+    }
+    
+    add_nodes_to_end(additional_nodes);
+    
+    UtilityFunctions::print("Extended rope by ", additional_length, " units, added ", additional_nodes, " nodes");
+}
+
+// 通过增加节点数来扩展绳子
+void ExampleClass::extend_rope_by_nodes(int additional_nodes) {
+    if (additional_nodes <= 0) {
+        UtilityFunctions::print("Error: Invalid additional node count");
+        return;
+    }
+    
+    add_nodes_to_end(additional_nodes);
+    
+    UtilityFunctions::print("Extended rope by ", additional_nodes, " nodes");
+}
+
+// 设置默认节点质量
+void ExampleClass::set_default_node_mass(float mass) {
+    default_node_mass = Math::clamp(mass, 0.01f, 100.0f);
+    UtilityFunctions::print("Set default node mass to: ", default_node_mass);
+}
+
+float ExampleClass::get_default_node_mass() const {
+    return default_node_mass;
 }

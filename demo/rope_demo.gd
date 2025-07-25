@@ -157,24 +157,130 @@ func _input(event):
 			KEY_R:  # 重置绳索
 				reset_rope_system()
 	
-	# 处理鼠标输入
+	# 处理鼠标滚轮输入 - 新增功能
 	elif event is InputEventMouseButton:
 		if event.pressed:
 			if event.button_index == MOUSE_BUTTON_LEFT:
-				# 左键按下 - 开始拖拽或双击检测
 				handle_mouse_press(event.position)
 			elif event.button_index == MOUSE_BUTTON_RIGHT:
-				# 右键按下 - 固定/解锁节点
 				handle_right_click(event.position)
+			# 新增：滚轮控制节点数量
+			elif event.button_index == MOUSE_BUTTON_WHEEL_UP:
+				handle_wheel_scroll(1)
+			elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
+				handle_wheel_scroll(-1)
 		else:
 			if event.button_index == MOUSE_BUTTON_LEFT:
-				# 左键释放 - 停止拖拽
 				handle_mouse_release()
 	
 	# 处理鼠标移动（拖拽）
 	elif event is InputEventMouseMotion:
 		if is_dragging:
 			update_drag(event.position)
+	
+	# 新增：滚轮控制函数
+func handle_wheel_scroll(direction: int):
+		"""处理滚轮滚动事件 - 控制节点增减"""
+		var input_map = Input
+		
+		# 检查修饰键状态
+		var shift_pressed = input_map.is_action_pressed("ui_shift") or Input.is_key_pressed(KEY_SHIFT)
+		var ctrl_pressed = input_map.is_action_pressed("ui_ctrl") or Input.is_key_pressed(KEY_CTRL)
+		var alt_pressed = input_map.is_action_pressed("ui_alt") or Input.is_key_pressed(KEY_ALT)
+		
+		if ctrl_pressed:
+			# Ctrl + 滚轮：调整段长度
+			var length_delta = direction * 2.0
+			adjust_segment_length(length_delta)
+			print("调整段长度: ", length_delta, ", 当前段长度: ", scale_factor)
+		elif shift_pressed:
+			# Shift + 滚轮：批量增减节点（5个为单位）
+			var node_delta = direction * 5
+			adjust_node_count_batch(node_delta)
+			print("批量调整节点数: ", node_delta, ", 当前节点数: ", rope_simulator.get_current_node_count())
+		elif alt_pressed:
+			# Alt + 滚轮：调整重力
+			var gravity_delta = direction * 0.5
+			adjust_gravity(gravity_delta)
+			print("调整重力: ", gravity_delta, ", 当前重力: ", rope_gravity)
+		else:
+			# 普通滚轮：单个节点增减
+			adjust_node_count(direction)
+			print("调整节点数: ", direction, ", 当前节点数: ", rope_simulator.get_current_node_count())
+	
+	# 新增：调整节点数量函数
+func adjust_node_count(delta: int):
+		"""调整节点数量"""
+		var current_count = rope_simulator.get_current_node_count()
+		var new_count = current_count + delta
+		
+		# 限制节点数量范围
+		new_count = clamp(new_count, 2, 200)
+		
+		if delta > 0:
+			# 增加节点
+			for i in range(delta):
+				if rope_simulator.get_current_node_count() < 200:
+					rope_simulator.add_node_to_end()
+		elif delta < 0:
+			# 减少节点
+			for i in range(abs(delta)):
+				var count = rope_simulator.get_current_node_count()
+				if count > 2:
+					rope_simulator.remove_node(count - 1)  # 移除最后一个节点
+					update_locked_nodes_after_removal(count - 1)
+
+
+		positions_dirty = true
+		rope_node_count = rope_simulator.get_current_node_count()
+	
+	# 新增：批量调整节点数量函数
+func adjust_node_count_batch(delta: int):
+		"""批量调整节点数量"""
+		if delta > 0:
+			# 批量增加节点
+			rope_simulator.add_nodes_to_end(delta)
+		elif delta < 0:
+			# 批量减少节点
+			var current_count = rope_simulator.get_current_node_count()
+			var remove_count = min(abs(delta), current_count - 2)  # 至少保留2个节点
+			
+			for i in range(remove_count):
+				var count = rope_simulator.get_current_node_count()
+				if count > 2:
+					rope_simulator.remove_node(count - 1)
+					update_locked_nodes_after_removal(count - 1)
+		
+		positions_dirty = true
+		rope_node_count = rope_simulator.get_current_node_count()
+	
+# 新增：调整段长度函数
+func adjust_segment_length(delta: float):
+	"""调整段长度"""
+	scale_factor = clamp(scale_factor + delta, 1.0, 20.0)
+	positions_dirty = true
+
+# 新增：调整重力函数
+func adjust_gravity(delta: float):
+	"""调整重力大小"""
+	rope_gravity = clamp(rope_gravity + delta, 0.0, 20.0)
+	rope_simulator.set_gravity(Vector2(0, rope_gravity * 10))
+
+# 新增：通过段长度设置绳子函数
+func setup_rope_by_segment_length():
+	"""通过段长度重新设置绳子"""
+	scale_factor = 5.0
+	rope_node_count = 100
+	rope_gravity = 9.8
+	
+	rope_simulator.set_node_count(rope_node_count)
+	rope_simulator.set_rope_length(base_rope_length)
+	rope_simulator.set_gravity(Vector2(0, rope_gravity ))
+	
+	setup_constraints()
+	positions_dirty = true
+	
+	print("重置绳子参数 - 节点数: ", rope_node_count, ", 段长度: ", scale_factor, ", 重力: ", rope_gravity)
 
 func handle_mouse_press(mouse_pos: Vector2):
 	"""处理鼠标按下事件"""
