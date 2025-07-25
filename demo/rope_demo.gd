@@ -33,7 +33,7 @@ var base_rope_length: float = 500.0  # 基准绳长
 var desired_display_length: float = 600.0  # 期望的显示长度（像素）
 
 @export  var scale_factor: float = 5.0  # 每一节绳子的像素长度
-@export var rope_node_count:int =10; #绳子节点数
+@export var rope_node_count:int =100; #绳子节点数
 @export var rope_gravity = 9.8;   #重力加速度
 
 

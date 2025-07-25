@@ -533,16 +533,17 @@ void ExampleClass::initializeRope(int numNodes, float totalLength, Vector2 start
     nodes.clear();
     nodes.reserve(numNodes);
     
-    segmentLength = totalLength / (numNodes - 1);
+    // 保持固定的段长度，而不是固定总长度
+    float desiredSegmentLength = 10.0f;  // 固定每段长度
+    segmentLength = desiredSegmentLength;
     
-    // 创建节点
+    // 重新计算实际总长度
+    rope_length = segmentLength * (numNodes - 1);
+    
     for (int i = 0; i < numNodes; ++i) {
         Vector2 position = startPos + Vector2(0, i * segmentLength);
-        nodes.emplace_back(position, 1.0f, i == 0); // 第一个节点默认锁定
+        nodes.emplace_back(position, 1.0f, i == 0);
     }
-    
-    isInitialized = true;
-    UtilityFunctions::print("绳索初始化完成，节点数：", numNodes, "，总长度：", totalLength);
 }
 
 // 添加缺失的函数实现
