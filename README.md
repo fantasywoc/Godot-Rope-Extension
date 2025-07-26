@@ -1,10 +1,16 @@
-# Godot C++ 绳索物理模拟器项目
+<div align=center>
+<h1>Godot C++ 绳索模拟demo</h1>
+<a href="https://github.com/fantasywoc/Godot-Rope-Extension?tab=readme-ov-file"><img src="https://img.shields.io/badge/Author-Fantasy-orange" alt="Author" /></a>
+<img src="https://img.shields.io/github/languages/count/fantasywoc/Godot-Rope-Extension" alt="languages-count" />
 
-## 项目概述
-# Godot C++ 绳索物理模拟器项目
-## 项目概述
+<img src="https://img.shields.io/github/last-commit/fantasywoc/Godot-Rope-Extension" alt="last-commit" />
 
-这是一个基于 Godot 4 和 C++ 的绳索项目，使用 C++ GDExtension 
+</div>
+
+##  项目概述
+
+这是一个基于 Godot 4 和 C++ 的绳索项目，使用 C++ GDExtension  和 gdscript
+
 ## RopeDemo快捷键
 
 - 左键双击：剪短该节点到末尾的绳索
