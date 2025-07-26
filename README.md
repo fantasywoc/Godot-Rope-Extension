@@ -1,7 +1,6 @@
-# Godot C++ 绳索物理模拟器项目
+# Godot C++ 绳索模拟demo
 
-## 项目概述
-# Godot C++ 绳索物理模拟器项目
+
 ## 项目概述
 
 这是一个基于 Godot 4 和 C++ 的绳索项目，使用 C++ GDExtension 
