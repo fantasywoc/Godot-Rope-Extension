@@ -1,9 +1,9 @@
 <div align=center>
 <h1>Godot C++ 绳索模拟demo</h1>
-<a href="https://github.com/fantasywoc/Vimag?tab=readme-ov-file"><img src="https://img.shields.io/badge/Author-Fantasy-orange" alt="Author" /></a>
-<img src="https://img.shields.io/github/languages/count/fantasywoc/Vimag" alt="languages-count" />
+<a href="https://github.com/fantasywoc/Godot-Rope-Extension?tab=readme-ov-file"><img src="https://img.shields.io/badge/Author-Fantasy-orange" alt="Author" /></a>
+<img src="https://img.shields.io/github/languages/count/fantasywoc/Godot-Rope-Extension" alt="languages-count" />
 
-<img src="https://img.shields.io/github/last-commit/fantasywoc/Vimag" alt="last-commit" />
+<img src="https://img.shields.io/github/last-commit/fantasywoc/Godot-Rope-Extension" alt="last-commit" />
 
 </div>
 
