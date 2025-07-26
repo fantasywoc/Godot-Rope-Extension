@@ -14,14 +14,14 @@ void initialize_gdextension_types(ModuleInitializationLevel p_level)
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
 		return;
 	}
-	// 打印版本信息
+	// 尝试打印gdot版本信息，（中文乱码）
     Dictionary version_info = Engine::get_singleton()->get_version_info();
     UtilityFunctions::print("Godot version: ", 
         version_info["major"], ".", 
         version_info["minor"], ".", 
         version_info["patch"]);
 
-	// 注册类 ExampleClass
+	// 注册类 ExampleClass  ，确保名和拓展类名保持一致
 	GDREGISTER_CLASS(ExampleClass);
 }
 
@@ -33,7 +33,7 @@ void uninitialize_gdextension_types(ModuleInitializationLevel p_level) {
 
 extern "C"
 {
-	// Initialization
+	
 	GDExtensionBool GDE_EXPORT example_library_init(GDExtensionInterfaceGetProcAddress p_get_proc_address, GDExtensionClassLibraryPtr p_library, GDExtensionInitialization *r_initialization)
 	{
 		GDExtensionBinding::InitObject init_obj(p_get_proc_address, p_library, r_initialization);

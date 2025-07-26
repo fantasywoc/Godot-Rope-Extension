@@ -1,5 +1,5 @@
 extends Node
-
+#C++扩展类使用demo
 # 输入点数组
 var points = [
 	Vector2(1, 2), 

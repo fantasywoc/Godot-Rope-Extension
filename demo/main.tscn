@@ -5,12 +5,29 @@
 [node name="Node2D" type="Node2D"]
 position = Vector2(4, -2)
 
-[node name="RopeNode" parent="." instance=ExtResource("1_ig7tw")]
-position = Vector2(666, 181)
+[node name="Rope1" parent="." instance=ExtResource("1_ig7tw")]
+position = Vector2(594, 28)
 scale_factor = 10.0
-rope_node_count = 30
+rope_node_count = 50
 ropeColor = Color(0.99701, 0.563736, 0.449278, 1)
 
-[node name="RopeNode2" parent="." instance=ExtResource("1_ig7tw")]
+[node name="Rope2" parent="." instance=ExtResource("1_ig7tw")]
+position = Vector2(101, 23)
 scale_factor = 5.0
-ropeColor = Color(0.114103, 0.649434, 0.581921, 1)
+ropeColor = Color(0.548965, 0.832753, 0.389313, 1)
+
+[node name="Rope3" parent="." instance=ExtResource("1_ig7tw")]
+position = Vector2(324, 23)
+scale_factor = 8.0
+ropeColor = Color(0.364706, 0.541176, 1, 1)
+
+[node name="Rope4" parent="." instance=ExtResource("1_ig7tw")]
+position = Vector2(842, 26)
+scale_factor = 12.0
+ropeColor = Color(6.73831e-07, 0.803988, 0.739463, 1)
+
+[node name="Rope5" parent="." instance=ExtResource("1_ig7tw")]
+position = Vector2(1120, 27)
+scale_factor = 13.0
+rope_node_count = 40
+ropeColor = Color(0.599569, 0.593034, 0.836904, 1)

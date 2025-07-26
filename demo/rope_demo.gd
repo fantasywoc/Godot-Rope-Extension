@@ -1,5 +1,5 @@
 extends Node
-var locked_nodes: Array = []  # 跟踪锁定的节点索引
+var locked_nodes: Array = []  # 记录锁定的节点索引
 
 var rope_simulator: ExampleClass
 var draw_node: Node2D
@@ -12,17 +12,17 @@ var frame_counter: int = 0
 var is_dragging: bool = false
 var dragged_node_index: int = -1
 var drag_offset: Vector2
-var drag_threshold: float = 20.0  # 拖拽检测阈值
+var drag_threshold: float = 20.0  #检测拖拽的阈值
 
 # 双击检测相关变量
 var last_click_time: float = 0.0
 var last_clicked_node: int = -1
-var double_click_threshold: float = 0.5  # 双击时间阈值（秒）
+var double_click_threshold: float = 0.5  # 双击时间0.5秒
 
 # 单击固定功能相关变量
 var click_timer: Timer
 var pending_click_node: int = -1
-var single_click_delay: float = 0.3  # 单击延迟时间，用于区分单击和双击
+var single_click_delay: float = 0.3 
 
 # 缓存变量，避免重复计算
 var cached_positions: Array
@@ -34,7 +34,7 @@ var desired_display_length: float = 600.0  # 期望的显示长度（像素）
 
 var scale_factor: float = 5.0  # 每一节绳子的像素长度
 var rope_node_count:int =10; #绳子节点数
-var rope_gravity = 9.8;   #重力加速度
+var gravity_multiplier = 3.0;   #重力加速度
 var ropeColor = Color.DARK_GOLDENROD
 var lineWith = 7.0;
 var nomal_node_size = lineWith ;
@@ -42,26 +42,26 @@ var nomal_node_size = lineWith ;
 @onready var rope_node: Marker2D = $".."
 
 func _ready():
-	# 从父节点获取参数并赋值给当前节点
+	# 从marker2d 导出参数同步数据
 	scale_factor = rope_node.scale_factor
 	rope_node_count = rope_node.rope_node_count
-	rope_gravity = rope_node.rope_gravity
+	gravity_multiplier = rope_node.gravity_multiplier
 	ropeColor = rope_node.ropeColor
 	lineWith = rope_node.lineWith
 
-	# 创建绘制节点
+	# 绘制节点
 	draw_node = Node2D.new()
 	add_child(draw_node)
 	draw_node.draw.connect(_on_draw)
 	
-	# 创建单击延迟计时器
+	# 单击计时器
 	click_timer = Timer.new()
 	click_timer.wait_time = single_click_delay
 	click_timer.one_shot = true
 	click_timer.timeout.connect(_on_single_click_confirmed)
 	add_child(click_timer)
 	
-	# 修改：使用父节点的全局位置而不是屏幕中心
+	#改用父节点位置，避免在场景中多次实例化时，实际渲染位置相同
 	screen_center = rope_node.global_position
 	
 	# 创建并配置绳索模拟器
@@ -83,23 +83,12 @@ func _ready():
 # 在 setup_rope_parameters 函数中添加弹性设置
 func setup_rope_parameters():
 	rope_simulator.set_node_count(rope_node_count)
-	rope_simulator.set_rope_length(base_rope_length)  # 使用变量
-	rope_simulator.set_gravity(Vector2(0, rope_gravity*10))
+	rope_simulator.set_rope_length(base_rope_length)  
+	rope_simulator.set_gravity_multiplier(gravity_multiplier) #使用重力倍率
 	
-	# === 弹性控制示例 ===
-	
-	
-	# # 添加物理上正确的设置：允许重力自然拉伸绳子
-	# rope_simulator.setElasticity(
-	# 	0.8,   # 较低刚度
-	# 	0.98,  # 高阻尼
-	# 	6,     # 适中迭代
-	# 	0.4,   # 较低约束强度
-	# 	0.2,   # 很低拉伸阻力 - 关键！
-	# 	1.5    # 较高压缩阻力
-	# )
-	rope_simulator.setElasticityPreset("rigid")
-	## 温和刚性配置 - 避免过度修正
+
+	rope_simulator.setElasticityPreset("rigid")   #使用预设参数配置
+	#自定义参数配置
 	#var gentle_rigid_params = {
 		#"stiffness": 0.4,              # 较低刚度避免过度修正
 		#"damping": 0.98,              # 高阻尼
@@ -110,24 +99,20 @@ func setup_rope_parameters():
 	#}
 	#rope_simulator.setAdvancedElasticity(gentle_rigid_params)
 
-
-
-# 添加键盘控制弹性参数
-# 添加键盘输入处理函数
-# 修改现有的 _input 函数，添加鼠标事件处理
+# 添加按键和鼠标控制
 func _input(event):
-	# 处理键盘输入
+
 	if event is InputEventKey and event.pressed:
 		match event.keycode:
-			KEY_F1:  # 刚性模式
+			KEY_F1:  
 				rope_simulator.setElasticityPreset("rigid")
 				print("切换到刚性模式")
-			KEY_F2:  # 弹性模式
+			KEY_F2:  
 				rope_simulator.setElasticityPreset("elastic")
 				print("切换到弹性模式")
-			KEY_F3:  # 柔软模式
-				# 替换setElasticity调用
-				rope_simulator.setElasticityPreset("soft")  # 使用柔软预设
+			KEY_F3:  
+				
+				rope_simulator.setElasticityPreset("soft")  
 				print("切换到柔软模式")
 			KEY_F4:  # 弹跳模式
 				rope_simulator.setElasticityPreset("bouncy")
@@ -147,8 +132,7 @@ func _input(event):
 			KEY_E:  # 增加约束强度
 				rope_simulator.adjustConstraintStrength(0.1)
 				print("增加约束强度")
-			KEY_T:  # 切换调试模式（修改为T键，避免与D键冲突）
-				toggle_debug()
+
 			KEY_P:  # 获取当前弹性参数
 				var params = rope_simulator.getElasticityParams()
 				print("当前弹性参数: ", params)
@@ -168,7 +152,7 @@ func _input(event):
 			KEY_R:  # 重置绳索
 				reset_rope_system()
 	
-	# 处理鼠标滚轮输入 - 新增功能
+	# 处理鼠标滚轮输入 
 	elif event is InputEventMouseButton:
 		if event.pressed:
 			if event.button_index == MOUSE_BUTTON_LEFT:
@@ -189,12 +173,11 @@ func _input(event):
 		if is_dragging:
 			update_drag(event.position)
 	
-	# 新增：滚轮控制函数
+	# 滚轮控制函数
 func handle_wheel_scroll(direction: int):
-		"""处理滚轮滚动事件 - 控制节点增减"""
+		"""处理滚轮控制节点增减"""
 		var input_map = Input
 		
-		# 检查修饰键状态
 		var shift_pressed = input_map.is_action_pressed("ui_shift") or Input.is_key_pressed(KEY_SHIFT)
 		var ctrl_pressed = input_map.is_action_pressed("ui_ctrl") or Input.is_key_pressed(KEY_CTRL)
 		var alt_pressed = input_map.is_action_pressed("ui_alt") or Input.is_key_pressed(KEY_ALT)
@@ -205,23 +188,19 @@ func handle_wheel_scroll(direction: int):
 			adjust_segment_length(length_delta)
 			print("调整段长度: ", length_delta, ", 当前段长度: ", scale_factor)
 		elif shift_pressed:
-			# Shift + 滚轮：批量增减节点（5个为单位）
+			# Shift + 滚轮：批量增减节点，每次增减5个
 			var node_delta = direction * 5
 			adjust_node_count_batch(node_delta)
 			print("批量调整节点数: ", node_delta, ", 当前节点数: ", rope_simulator.get_current_node_count())
-		elif alt_pressed:
-			# Alt + 滚轮：调整重力
-			var gravity_delta = direction * 0.5
-			adjust_gravity(gravity_delta)
-			print("调整重力: ", gravity_delta, ", 当前重力: ", rope_gravity)
+		
 		else:
 			# 普通滚轮：单个节点增减
 			adjust_node_count(direction)
 			print("调整节点数: ", direction, ", 当前节点数: ", rope_simulator.get_current_node_count())
 	
-	# 新增：调整节点数量函数
+	#调整节点数量
 func adjust_node_count(delta: int):
-		"""调整节点数量"""
+		
 		var current_count = rope_simulator.get_current_node_count()
 		var new_count = current_count + delta
 		
@@ -245,14 +224,14 @@ func adjust_node_count(delta: int):
 		positions_dirty = true
 		rope_node_count = rope_simulator.get_current_node_count()
 	
-	# 新增：批量调整节点数量函数
+	# 批量调整节点数量
 func adjust_node_count_batch(delta: int):
 		"""批量调整节点数量"""
 		if delta > 0:
-			# 批量增加节点
+			# 增加节点
 			rope_simulator.add_nodes_to_end(delta)
 		elif delta < 0:
-			# 批量减少节点
+			# 减少节点
 			var current_count = rope_simulator.get_current_node_count()
 			var remove_count = min(abs(delta), current_count - 2)  # 至少保留2个节点
 			
@@ -265,36 +244,31 @@ func adjust_node_count_batch(delta: int):
 		positions_dirty = true
 		rope_node_count = rope_simulator.get_current_node_count()
 	
-# 新增：调整段长度函数
+# 调整绳段长度函数
 func adjust_segment_length(delta: float):
-	"""调整段长度"""
 	scale_factor = clamp(scale_factor + delta, 1.0, 20.0)
 	positions_dirty = true
 
-# 新增：调整重力函数
-func adjust_gravity(delta: float):
-	"""调整重力大小"""
-	rope_gravity = clamp(rope_gravity + delta, 0.0, 20.0)
-	rope_simulator.set_gravity(Vector2(0, rope_gravity * 2))
 
-# 新增：通过段长度设置绳子函数
+
+# 通过段长度设置绳子函数
 func setup_rope_by_segment_length():
-	"""通过段长度重新设置绳子"""
+
 	scale_factor = 5.0
 	rope_node_count = 100
-	rope_gravity = 9.8
+
 	
 	rope_simulator.set_node_count(rope_node_count)
 	rope_simulator.set_rope_length(base_rope_length)
-	rope_simulator.set_gravity(Vector2(0, rope_gravity ))
+
 	
 	setup_constraints()
 	positions_dirty = true
 	
-	print("重置绳子参数 - 节点数: ", rope_node_count, ", 段长度: ", scale_factor, ", 重力: ", rope_gravity)
+	# print("重置绳子参数 - 节点数: ", rope_node_count, ", 段长度: ", scale_factor, ", 重力: ", rope_gravity)
 
 func handle_mouse_press(mouse_pos: Vector2):
-	"""处理鼠标按下事件"""
+
 	var clicked_node = get_clicked_node(mouse_pos)
 	if clicked_node == -1:
 		return
@@ -574,12 +548,12 @@ func cut_rope_from_node(node_index: int):
 	
 	# 检查有效性
 	if node_index < 0 or node_index >= current_count:
-		print("错误：节点索引无效")
+		print("节点索引无效")
 		return
 	
 	# 不能剪断第一个节点（起始点）
 	if node_index == 0:
-		print("错误：不能剪断起始节点")
+		print("错误：不能剪断第一个节点")
 		return
 	
 	# 如果点击的是最后一个节点，则移除它
@@ -600,7 +574,7 @@ func cut_rope_from_node(node_index: int):
 		if remove_index >= node_index:
 			rope_simulator.remove_node(remove_index)
 	
-	# ✅ 关键修复：更新锁定节点索引
+	#更新锁定节点索引
 	update_locked_nodes_after_batch_removal(node_index)
 	
 	positions_dirty = true
@@ -670,8 +644,8 @@ func _process(delta):
 	if positions_dirty:
 		draw_node.queue_redraw()
 	
-	# 可选的调试信息（降低频率）
+	# 调试信息
 	if debug_enabled:
 		frame_counter += 1
-		if frame_counter % 120 == 0:  # 每2秒输出一次
+		if frame_counter % 120 == 0: 
 			print_debug_info()

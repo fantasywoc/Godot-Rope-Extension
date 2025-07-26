@@ -10,10 +10,18 @@ config_version=5
 
 [application]
 
-config/name="godot cpp template"
-run/main_scene="uid://dh0oj81pufivs"
+config/name="godot cpp Rope"
+run/main_scene="uid://ucg5oc7o3ns5"
 config/features=PackedStringArray("4.4", "Forward Plus")
 config/icon="res://icon.svg"
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/size/mode=3
+window/size/borderless=true
+window/stretch/mode="canvas_items"
 
 [rendering]
 

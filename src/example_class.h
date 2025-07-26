@@ -80,7 +80,7 @@ private:
     Vector2 physics_gravity = Vector2(0, 9.8f);
     bool isInitialized = false;
     float segmentLength = 0.1f;
-    
+    float gravity_multiplier = 10.0f;  //set_gravity_multiplier 增加这个值可以增强/减弱重力对绳子的影响
     // 弹性控制参数
     ElasticityParams elasticity;
     
@@ -91,7 +91,7 @@ private:
     // 导出属性
     int node_count = 10;
     float rope_length = 5.0;
-    Vector2 gravity = Vector2(0, 9.8);
+    Vector2 gravity = Vector2(0, 980);
     float default_node_mass = 1.0f;
     
     // 添加缺失的私有函数声明
@@ -142,26 +142,26 @@ public:
     void set_constraint_strength(float value) { elasticity.constraint_strength = Math::clamp(value, 0.1f, 1.0f); }
     float get_constraint_strength() const { return elasticity.constraint_strength; }
     
-    // 调试相关函数
+ 
     void set_debug_draw(bool enabled);
     bool is_debug_drawing() const;
     
-    // 节点操作函数
+    // 绳子操作函数
     void remove_node(int index);
     void cut_rope_at(int index);
     int get_current_node_count() const;
     
-    // 新增：节点增加函数
+    // 绳子节点增加函数
     void add_node_at(int index, Vector2 position = Vector2(0, 0));
     void add_node_to_end();
     void add_nodes_to_end(int count);
     void insert_node_between(int index1, int index2);
     
-    // 新增：批量节点操作
+    // 批量节点操作
     void extend_rope_by_length(float additional_length);
     void extend_rope_by_nodes(int additional_nodes);
     
-    // 节点位置操作函数
+    // 节点位置操作
     void set_node_position(int index, Vector2 position);
     void move_node(int index, Vector2 displacement);
     Vector2 get_node_position(int index) const;
@@ -176,7 +176,7 @@ public:
     void set_node_velocity(int index, Vector2 velocity);
     Vector2 get_node_velocity(int index) const;
     
-    // 其他现有方法
+   
     void update_physics(float deltaTime);
     Array get_node_positions() const;
     void setNodeMass(int index, float mass);
@@ -184,7 +184,10 @@ public:
     void apply_force(int node_index, Vector2 force);
     void reset_rope();
     
-    // 属性访问器
+    // 重力系数 范围0.01-100.0倍重力
+    void set_gravity_multiplier(float new_gravity_multiplier) {
+                                        gravity_multiplier = Math::clamp(new_gravity_multiplier, 0.01f, 100.0f);  }
+    float get_gravity_multiplier() const { return gravity_multiplier; }
     void set_node_count(int count);
     int get_node_count() const { return node_count; }
     void set_rope_length(float length);
@@ -192,7 +195,7 @@ public:
     void set_gravity(Vector2 g);
     Vector2 get_gravity() const { return gravity; }
     
-    // 生命周期方法
+
     void _ready();
     void _process(double delta);
     void _draw();

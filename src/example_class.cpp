@@ -7,15 +7,14 @@
 
 using namespace godot;
 
-// === 核心弹性控制函数实现 ===
 
 void ExampleClass::setElasticity(float stiffness, float damping, int iterations, 
                                 float constraint_strength, float stretch_resistance,
                                 float compression_resistance) {
-    // 设置刚度
+    // 刚度
     elasticity.stiffness = Math::clamp(stiffness, 0.1f, 3.0f);
     
-    // 设置阻尼
+    // 阻尼
     elasticity.damping = Math::clamp(damping, 0.7f, 1.0f);
     
     // 可选参数设置
@@ -34,12 +33,12 @@ void ExampleClass::setElasticity(float stiffness, float damping, int iterations,
     if (compression_resistance >= 0.0f) {
         elasticity.compression_resistance = Math::clamp(compression_resistance, 0.5f, 2.0f);
     }
-    
+    //godot 输出函数
     UtilityFunctions::print("Elasticity parameters updated - Stiffness:", elasticity.stiffness, 
                            " Damping:", elasticity.damping, 
                            " Iterations:", elasticity.constraint_iterations);
 }
-
+// 预设属性
 void ExampleClass::setElasticityPreset(const String& preset_name) {
     if (preset_name == "rigid") {
         elasticity.setRigid();
@@ -92,7 +91,7 @@ Dictionary ExampleClass::getElasticityParams() const {
     return params;
 }
 
-// 替换现有的中文输出
+
 void ExampleClass::adjustStiffness(float delta) {
     elasticity.stiffness = Math::clamp(elasticity.stiffness + delta, 0.1f, 3.0f);
     UtilityFunctions::print("Stiffness adjusted to:", elasticity.stiffness);
@@ -108,7 +107,7 @@ void ExampleClass::adjustConstraintStrength(float delta) {
     UtilityFunctions::print("Constraint strength adjusted to:", elasticity.constraint_strength);
 }
 
-// === 优化的物理更新函数 ===
+// 更新函数 
 
 void ExampleClass::update_physics(float deltaTime) {
     if (!isInitialized) {
@@ -116,26 +115,35 @@ void ExampleClass::update_physics(float deltaTime) {
         return;
     }
 
-    // 增加重力影响的时间步长倍数
-    float gravity_multiplier = 2.0f;  // 增加这个倍数
+    // // 重力影响的时间步长
+    // gravity_multiplier = 10.0f;  // 增加这个值可以增强重力对绳子的影响
     
-    // 韦尔莱积分更新位置
+        // 韦尔莱积分更新位置
     for (auto& node : nodes) {
         if (node.locked) continue;
         
+        // 计算当前速度：v(t) = (x(t) - x(t-Δt))/Δt
+        // 这里没有除以deltaTime，因为后续位置更新会乘以deltaTime
         Vector2 velocity = node.position - node.oldPosition;
+        
+        // 阻尼效果其实是就是一个减速的效果，类似风阻
         velocity *= elasticity.damping;
         
+        // 更新位置
         node.oldPosition = node.position;
-        // 增强重力效果
-        node.position += velocity + physics_gravity * deltaTime * deltaTime * gravity_multiplier;
+        
+        // 维尔莱积分位置更新：x(t+Δt) = x(t) + v(t)*Δt + a(t)*(Δt)²
+        // 其中：
+        // - velocity 等价于 v(t)*Δt
+        // - physics_gravity * deltaTime * deltaTime * gravity_multiplier 等价于 a(t)*(Δt)²
+        // - gravity_multiplier 是一个系数，用于调整重力的影响强度
+        node.position += velocity + (physics_gravity * gravity_multiplier ) * deltaTime * deltaTime;
     }
 
     applyConstraints(deltaTime);
 }
 
 void ExampleClass::applyConstraints(float deltaTime) {
-    // 可调节的约束迭代
     for (int iter = 0; iter < elasticity.constraint_iterations; ++iter) {
         for (int i = 0; i < static_cast<int>(nodes.size()) - 1; ++i) {
             RopeNode& nodeA = nodes[i];
@@ -154,7 +162,7 @@ void ExampleClass::applyConstraints(float deltaTime) {
             // 应用刚度、约束强度和阻力
             correction *= elasticity.stiffness * elasticity.constraint_strength * resistance;
             
-            // 根据迭代次数调整修正强度（后期迭代更精细）
+            // 根据迭代次数调整修正强度
             float iteration_factor = 1.0f - (float(iter) / float(elasticity.constraint_iterations)) * 0.3f;
             correction *= iteration_factor;
 
@@ -174,10 +182,9 @@ void ExampleClass::applyConstraints(float deltaTime) {
     }
 }
 
-// === Godot 方法绑定 ===
-
+/////////////////////////// Godot 绑定 C++扩展类///////////////////////////
 void ExampleClass::_bind_methods() {
-    // 核心弹性控制函数
+  
     ClassDB::bind_method(D_METHOD("setElasticity", "stiffness", "damping", "iterations", "constraint_strength", "stretch_resistance", "compression_resistance"), 
                         &ExampleClass::setElasticity, DEFVAL(-1), DEFVAL(-1.0f), DEFVAL(-1.0f), DEFVAL(-1.0f));
     
@@ -185,12 +192,10 @@ void ExampleClass::_bind_methods() {
     ClassDB::bind_method(D_METHOD("setAdvancedElasticity", "params"), &ExampleClass::setAdvancedElasticity);
     ClassDB::bind_method(D_METHOD("getElasticityParams"), &ExampleClass::getElasticityParams);
     
-    // 实时调整函数
     ClassDB::bind_method(D_METHOD("adjustStiffness", "delta"), &ExampleClass::adjustStiffness);
     ClassDB::bind_method(D_METHOD("adjustDamping", "delta"), &ExampleClass::adjustDamping);
     ClassDB::bind_method(D_METHOD("adjustConstraintStrength", "delta"), &ExampleClass::adjustConstraintStrength);
     
-    // 弹性参数访问器
     ClassDB::bind_method(D_METHOD("set_stiffness", "value"), &ExampleClass::set_stiffness);
     ClassDB::bind_method(D_METHOD("get_stiffness"), &ExampleClass::get_stiffness);
     ClassDB::bind_method(D_METHOD("set_damping", "value"), &ExampleClass::set_damping);
@@ -199,8 +204,7 @@ void ExampleClass::_bind_methods() {
     ClassDB::bind_method(D_METHOD("get_constraint_iterations"), &ExampleClass::get_constraint_iterations);
     ClassDB::bind_method(D_METHOD("set_constraint_strength", "value"), &ExampleClass::set_constraint_strength);
     ClassDB::bind_method(D_METHOD("get_constraint_strength"), &ExampleClass::get_constraint_strength);
-    
-    // 现有方法绑定...
+
     ClassDB::bind_method(D_METHOD("update_physics", "delta"), &ExampleClass::update_physics);
     ClassDB::bind_method(D_METHOD("get_node_positions"), &ExampleClass::get_node_positions);
     ClassDB::bind_method(D_METHOD("set_node_count", "count"), &ExampleClass::set_node_count);
@@ -216,37 +220,40 @@ void ExampleClass::_bind_methods() {
     ClassDB::bind_method(D_METHOD("setNodeLocked", "index", "locked"), &ExampleClass::setNodeLocked);
     ClassDB::bind_method(D_METHOD("setNodeMass", "index", "mass"), &ExampleClass::setNodeMass);
     
-    // 现有节点操作
     ClassDB::bind_method(D_METHOD("remove_node", "index"), &ExampleClass::remove_node);
     ClassDB::bind_method(D_METHOD("cut_rope_at", "index"), &ExampleClass::cut_rope_at);
     ClassDB::bind_method(D_METHOD("get_current_node_count"), &ExampleClass::get_current_node_count);
     
-    // 新增：节点添加函数
+    //增加绳子长度相关函数
     ClassDB::bind_method(D_METHOD("add_node_at", "index", "position"), &ExampleClass::add_node_at, DEFVAL(Vector2(0, 0)));
     ClassDB::bind_method(D_METHOD("add_node_to_end"), &ExampleClass::add_node_to_end);
     ClassDB::bind_method(D_METHOD("add_nodes_to_end", "count"), &ExampleClass::add_nodes_to_end);
     ClassDB::bind_method(D_METHOD("insert_node_between", "index1", "index2"), &ExampleClass::insert_node_between);
     
-    // 新增：批量操作函数
+    
     ClassDB::bind_method(D_METHOD("extend_rope_by_length", "additional_length"), &ExampleClass::extend_rope_by_length);
     ClassDB::bind_method(D_METHOD("extend_rope_by_nodes", "additional_nodes"), &ExampleClass::extend_rope_by_nodes);
     
-    // 新增：默认质量设置
+    //质量设置
     ClassDB::bind_method(D_METHOD("set_default_node_mass", "mass"), &ExampleClass::set_default_node_mass);
     ClassDB::bind_method(D_METHOD("get_default_node_mass"), &ExampleClass::get_default_node_mass);
-    
-    // 注册属性
-    ADD_PROPERTY(PropertyInfo(Variant::INT, "node_count", PROPERTY_HINT_RANGE, "2,100"), "set_node_count", "get_node_count");
-    ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "rope_length", PROPERTY_HINT_RANGE, "0.1,50.0"), "set_rope_length", "get_rope_length");
-    ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "gravity"), "set_gravity", "get_gravity");
-    ADD_PROPERTY(PropertyInfo(Variant::BOOL, "debug_draw"), "set_debug_draw", "is_debug_drawing");
-    
+    ClassDB::bind_method(D_METHOD("set_gravity_multiplier", "new_gravity_multiplier"), &ExampleClass::set_gravity_multiplier);
+    ClassDB::bind_method(D_METHOD("get_gravity_multiplier"), &ExampleClass::get_gravity_multiplier);
+
     // 节点位移功能绑定
     ClassDB::bind_method(D_METHOD("set_node_position", "index", "position"), &ExampleClass::set_node_position);
     ClassDB::bind_method(D_METHOD("move_node", "index", "displacement"), &ExampleClass::move_node);
     ClassDB::bind_method(D_METHOD("get_node_position", "index"), &ExampleClass::get_node_position);
     ClassDB::bind_method(D_METHOD("translate_all_nodes", "displacement"), &ExampleClass::translate_all_nodes);
     ClassDB::bind_method(D_METHOD("translate_nodes_range", "start_index", "end_index", "displacement"), &ExampleClass::translate_nodes_range);
+    // 注册属性
+    ADD_PROPERTY(PropertyInfo(Variant::INT, "node_count", PROPERTY_HINT_RANGE, "2,100"), "set_node_count", "get_node_count");
+    ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "rope_length", PROPERTY_HINT_RANGE, "0.1,50.0"), "set_rope_length", "get_rope_length");
+    ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "gravity"), "set_gravity", "get_gravity");
+    ADD_PROPERTY(PropertyInfo(Variant::BOOL, "debug_draw"), "set_debug_draw", "is_debug_drawing");
+    
+
+
 }
 
 void ExampleClass::update_simulator() {
@@ -263,7 +270,7 @@ Array ExampleClass::get_node_positions() const {
     return positions;
 }
 
-// Godot生命周期方法
+
 void ExampleClass::_ready() {
     update_simulator();
 }
@@ -280,7 +287,7 @@ void ExampleClass::_draw() {
     }
 }
 
-// 属性访问器方法
+
 void ExampleClass::set_node_count(int count) {
     node_count = Math::clamp(count, 2, 100);
     update_simulator();
@@ -297,14 +304,14 @@ void ExampleClass::set_gravity(Vector2 g) {
 }
 
 void ExampleClass::apply_force(int node_index, Vector2 force) {
-    applyForce(node_index, force, 0.016f); // 假设60FPS
+    applyForce(node_index, force, 0.016f); // 默认60FPS
 }
 
 void ExampleClass::reset_rope() {
     update_simulator();
 }
 
-// 改进的 remove_node 函数，避免过度弹性
+
 void ExampleClass::remove_node(int index) {
     if (index < 0 || index >= static_cast<int>(nodes.size())) {
         UtilityFunctions::print("Error: Node index out of range");
@@ -338,11 +345,10 @@ void ExampleClass::remove_node(int index) {
     
     // 移除节点
     nodes.erase(nodes.begin() + index);
-    
-    // ✅ 添加：同步更新配置的节点数量
+
     node_count = static_cast<int>(nodes.size());
     
-    // 重新计算段长度，基于实际剩余节点的距离
+  
     float total_length = 0.0f;
     for (int i = 0; i < static_cast<int>(positions.size()) - 1; ++i) {
         total_length += (positions[i + 1] - positions[i]).length();
@@ -399,7 +405,7 @@ void ExampleClass::cut_rope_at(int index) {
         nodes[i].mass = mass_values[i];
     }
     
-    UtilityFunctions::print("Cut rope at node ", index, ", new length: ", rope_length, ", new node count: ", nodes.size());
+    // UtilityFunctions::print("Cut rope at node ", index, ", new length: ", rope_length, ", new node count: ", nodes.size());
 }
 
 // 获取当前实际节点数
@@ -417,7 +423,7 @@ void ExampleClass::set_node_position(int index, Vector2 position) {
     nodes[index].position = position;
     nodes[index].oldPosition = position; // 重置速度
     
-    UtilityFunctions::print("Set node ", index, " position to: ", position);
+    // UtilityFunctions::print("Set node ", index, " position to: ", position);
 }
 
 void ExampleClass::move_node(int index, Vector2 displacement) {
@@ -427,7 +433,7 @@ void ExampleClass::move_node(int index, Vector2 displacement) {
     }
     
     nodes[index].position += displacement;
-    nodes[index].oldPosition += displacement; // 保持速度不变
+    nodes[index].oldPosition += displacement;
     
     UtilityFunctions::print("Moved node ", index, " by: ", displacement, ", new position: ", nodes[index].position);
 }
@@ -444,7 +450,7 @@ Vector2 ExampleClass::get_node_position(int index) const {
 void ExampleClass::translate_all_nodes(Vector2 displacement) {
     for (auto& node : nodes) {
         node.position += displacement;
-        node.oldPosition += displacement; // 保持速度不变
+        node.oldPosition += displacement;
     }
     
     UtilityFunctions::print("Translated all nodes by: ", displacement);
@@ -458,7 +464,7 @@ void ExampleClass::translate_nodes_range(int start_index, int end_index, Vector2
     
     for (int i = start_index; i <= end_index; ++i) {
         nodes[i].position += displacement;
-        nodes[i].oldPosition += displacement; // 保持速度不变
+        nodes[i].oldPosition += displacement; 
     }
     
     UtilityFunctions::print("Translated nodes ", start_index, " to ", end_index, " by: ", displacement);
@@ -496,19 +502,19 @@ Vector2 ExampleClass::get_node_velocity(int index) const {
     
     return nodes[index].position - nodes[index].oldPosition;
 }
-// 在 #include 语句之后添加
+
 
 ExampleClass::ExampleClass() {
     node_count = 20;
     rope_length = 1.0f;
-    gravity = Vector2(0, 9.8f);
-    physics_gravity = Vector2(0, 9.8f);
+    // gravity = Vector2(0, 9.8f);
+    physics_gravity = gravity;
     segmentLength = 0.1f;
     debug_draw = true;
     isInitialized = false;
-    default_node_mass = 1.0f;  // 初始化默认节点质量
+    default_node_mass = 1.0f;  
     
-    // 初始化弹性参数
+    // 弹性参数
     elasticity.constraint_iterations = 5;
     elasticity.stiffness = 1.0f;
     elasticity.damping = 0.99f;
@@ -518,11 +524,11 @@ ExampleClass::ExampleClass() {
 }
 
 ExampleClass::~ExampleClass() {
-    // 清理资源
+    // 清理
     nodes.clear();
 }
 
-// 添加调试相关函数
+// 调试
 void ExampleClass::set_debug_draw(bool enabled) {
     debug_draw = enabled;
 }
