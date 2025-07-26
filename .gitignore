@@ -45,7 +45,7 @@ compile_commands.json
 *.includes
 *.idb
 *.exp
-
+*.tmp
 # Other stuff
 *.log
 
@@ -60,3 +60,4 @@ compile_commands.json
 # Cmake
 cmake-build*
 CMakeUserPresets.json
+
