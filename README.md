@@ -12,7 +12,7 @@
 - 左键拖拽：移动锁定节点/移动解锁节点
 - 滚轮：增减绳索节点
 - ctrl+滚轮：增加/减少绳索节点长度
-
+- up/down：增加/减少重力影响
 
 # C++扩展编译
 详细C++扩展和说明可以参考       **[Godot C++ 扩展编译demo](https://github.com/fantasywoc/godot_cpp_extension)**

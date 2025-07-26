@@ -133,24 +133,29 @@ func _input(event):
 				rope_simulator.adjustConstraintStrength(0.1)
 				print("增加约束强度")
 
-			KEY_P:  # 获取当前弹性参数
-				var params = rope_simulator.getElasticityParams()
-				print("当前弹性参数: ", params)
-			KEY_1: # 设置第5个节点到指定位置
-				rope_simulator.set_node_position(5, Vector2(200, 300))
-			KEY_2: # 向右移动第3个节点
-				rope_simulator.move_node(3, Vector2(50, 0))
-			KEY_3: # 获取第0个节点位置
-				var pos = rope_simulator.get_node_position(0)
-				print("Node 0 position: ", pos)
-			KEY_4: # 整体向上移动
-				rope_simulator.translate_all_nodes(Vector2(0, -20))
-			KEY_5: # 移动中间几个节点
-				rope_simulator.translate_nodes_range(2, 7, Vector2(10, -10))
-			KEY_X:  # 移除中间节点
-				remove_middle_node()
-			KEY_R:  # 重置绳索
-				reset_rope_system()
+			KEY_UP:  
+				gravity_multiplier+=0.5
+				rope_simulator.set_gravity_multiplier(gravity_multiplier)
+				print("重力倍率增加：",gravity_multiplier)
+			KEY_DOWN:
+				gravity_multiplier-=0.5
+				rope_simulator.set_gravity_multiplier(gravity_multiplier)
+				print("重力倍率降低：",gravity_multiplier)
+			#KEY_1: # 设置第5个节点到指定位置
+				#rope_simulator.set_node_position(5, Vector2(200, 300))
+			#KEY_2: # 向右移动第3个节点
+				#rope_simulator.move_node(3, Vector2(50, 0))
+			#KEY_3: # 获取第0个节点位置
+				#var pos = rope_simulator.get_node_position(0)
+				#print("Node 0 position: ", pos)
+			#KEY_4: # 整体向上移动
+				#rope_simulator.translate_all_nodes(Vector2(0, -20))
+			#KEY_5: # 移动中间几个节点
+				#rope_simulator.translate_nodes_range(2, 7, Vector2(10, -10))
+			#KEY_X:  # 移除中间节点
+				#remove_middle_node()
+			#KEY_R:  # 重置绳索
+				#reset_rope_system()
 	
 	# 处理鼠标滚轮输入 
 	elif event is InputEventMouseButton:
@@ -498,11 +503,6 @@ func toggle_node_lock(node_index: int):
 		var status = "解锁" if is_currently_locked else "锁定"
 		print("节点 ", node_index, " 已", status)
 
-# 更新检查节点锁定状态的函数
-# # 取消注释并修复 is_node_locked 函数（大约在第85行）
-# func is_node_locked(node_index: int) -> bool:
-# 	"""检查节点是否被锁定"""
-# 	return locked_nodes.has(node_index)
 
 func update_drag(mouse_pos: Vector2):
 	"""更新拖拽位置"""
