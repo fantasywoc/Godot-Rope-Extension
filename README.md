@@ -1,9 +1,14 @@
-# Godot C++ 绳索模拟demo
+<div align=center>
+<h1>Godot C++ 绳索模拟demo</h1>
+<a href="https://github.com/fantasywoc/Vimag?tab=readme-ov-file"><img src="https://img.shields.io/badge/Author-Fantasy-orange" alt="Author" /></a>
+<img src="https://img.shields.io/github/languages/count/fantasywoc/Vimag" alt="languages-count" />
+<img src="https://img.shields.io/github/languages/top/fantasywoc/Vimag?color=yellow" alt="languages-top" />
+<img src="https://img.shields.io/github/last-commit/fantasywoc/Vimag" alt="last-commit" />
 
-
+</div>
 ## 项目概述
 
-这是一个基于 Godot 4 和 C++ 的绳索项目，使用 C++ GDExtension 
+这是一个基于 Godot 4 和 C++ 的绳索项目，使用 C++ GDExtension  和 gdscript
 ## RopeDemo快捷键
 
 - 左键双击：剪短该节点到末尾的绳索
