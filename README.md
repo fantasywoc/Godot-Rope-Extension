@@ -97,4 +97,20 @@ Godot_c++/
 
 
 
+## 📊 动态统计
+[![Stars](https://img.shields.io/github/stars/fantasywoc/Godot-Rope-Extension?label=Stars&color=yellow&logo=github)](https://github.com/fantasywoc/Vimag/stargazers)
+[![Forks](https://img.shields.io/github/forks/fantasywoc/Godot-Rope-Extension?label=Forks&color=blue&logo=github)](https://github.com/fantasywoc/Vimag/network/members)
+[![Downloads](https://img.shields.io/github/downloads/fantasywoc/Godot-Rope-Extension/total?label=Downloads)](https://github.com/fantasywoc/Godot-Rope-Extension/releases)
+## ⭐ 星标历史 Star History
+<a href="https://star-history.com/#fantasywoc/Godot-Rope-Extension&Date"> 
+<picture>   
+<source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=fantasywoc/Godot-Rope-Extension&type=Date&theme=dark" />   
+<source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=fantasywoc/Godot-Rope-Extension&type=Date" />   
+<img alt="Star History Chart" src="https://api.star-history.com/svg?repos=fantasywoc/Godot-Rope-Extension&type=Date" /> 
+</picture>
+</a>
+
+
+
+
         
