@@ -7,7 +7,7 @@
 
 </div>
 
-![afa20e](D:\File\afa20e.jpg)
+![afa20e](https://github.com/fantasywoc/Godot-Rope-Extension/blob/main/rope_cover.png)
 ##  项目概述
 
 这是一个基于 Godot 4 和 C++ 的绳索项目，使用 C++ GDExtension  和 gdscript
